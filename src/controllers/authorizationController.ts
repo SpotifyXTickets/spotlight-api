@@ -6,14 +6,10 @@ import SpotifyLogic from "../logics/spotifyLogic";
 export default class AuthorizationController extends AppController {
   constructor() {
     super();
+    // uses the function in the baseclass to generate routes for the router.
     this.setRoutes([
       {
         uri: "/eventix",
-        middlewares: [
-          (req: Request, res: Response, next: NextFunction) => {
-            next();
-          },
-        ],
         method: this.authorizeEventix,
       },
       {

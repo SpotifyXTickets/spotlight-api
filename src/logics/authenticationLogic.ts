@@ -14,8 +14,12 @@ export default class AuthenticationLogic {
   }
 
   public CheckAuthorization(req: Request, res: Response) {
+    const authorization = req.headers.authorization;
+    if (authorization === undefined) {
+      return false;
+    }
     let spotifyLogic = new SpotifyLogic();
-    return spotifyLogic.checkAuthorization();
+    return spotifyLogic.checkAuthorization(authorization.split(" ")[1]);
   }
 }
 

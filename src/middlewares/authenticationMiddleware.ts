@@ -10,7 +10,8 @@ export const Authenticated = async (
   if (authenticationLogic.CheckAuthorization(req, res)) {
     return next();
   }
-  await authenticationLogic.AuthorizeSpotify(req, res);
+  res.status(401).json({ error: "Unauthorized" });
+  // await authenticationLogic.AuthorizeSpotify(req, res);
 
   next();
 };
@@ -19,9 +20,9 @@ export const NotAuthenticated = (
   res: Response,
   next: NextFunction
 ) => {
-  //   if (!req.isAuthenticated()) {
-  //     return next();
-  //   }
-  //   res.redirect("/");
-  next();
+  const authenticationLogic = new AuthenticationLogic();
+  if (!authenticationLogic.CheckAuthorization(req, res)) {
+    next();
+  }
+  res.status(401).json({ error: "Already authenticated" });
 };

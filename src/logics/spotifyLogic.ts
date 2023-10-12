@@ -8,11 +8,13 @@ export default class SpotifyLogic {
   constructor() {
     this.authenticationRepository = new AuthenticationRepository();
   }
-  public checkAuthorization() {
+  public checkAuthorization(accessToken: string) {
     const auth = this.authenticationRepository.GetSpotifyAuth();
-    if (auth) {
-      if (auth.updatedAt < new Date(Date.now() - auth.expiresIn)) {
-        this.RefreshAuthorization(auth);
+    if (auth && auth.accessToken === accessToken) {
+      if (
+        auth.spotify.updatedAt < new Date(Date.now() - auth.spotify.expiresIn)
+      ) {
+        this.RefreshAuthorization(auth.spotify);
       }
       return true;
     }
@@ -47,13 +49,13 @@ export default class SpotifyLogic {
         }
       )
       .then((response) => {
-        this.authenticationRepository.UpdateSpotifyAuth(
-          response.data.access_token,
-          response.data.token_type,
-          response.data.expires_in,
-          auth.refreshToken,
-          auth.scope
-        );
+        this.authenticationRepository.UpdateSpotifyAuth("", {
+          accessToken: response.data.access_token,
+          tokenType: response.data.token_type,
+          expiresIn: response.data.expires_in,
+          refreshToken: auth.refreshToken,
+          scope: auth.scope,
+        });
       })
       .catch((error) => {
         console.error(error);
@@ -74,7 +76,7 @@ export default class SpotifyLogic {
           response_type: "code",
           client_id: process.env.SPOTIFY_CLIENT_ID || "",
           scope,
-          redirect_uri: "http://localhost:8000/authorize/spotify",
+          redirect_uri: "http://localhost:3000/spotify_authorizer",
           state: "randomstring",
         }).toString()
     );
@@ -86,7 +88,7 @@ export default class SpotifyLogic {
         "https://accounts.spotify.com/api/token",
         new URLSearchParams({
           grant_type: "authorization_code",
-          redirect_uri: "http://localhost:8000/authorize/spotify",
+          redirect_uri: "http://localhost:3000/spotify_authorizer",
           code,
           client_id: process.env.SPOTIFY_CLIENT_ID || "",
           client_secret: process.env.SPOTIFY_CLIENT_SECRET || "",
@@ -98,20 +100,23 @@ export default class SpotifyLogic {
         }
       )
       .then((response) => {
-        this.authenticationRepository.InsertSpotifyAuth(
-          response.data.access_token,
-          response.data.token_type,
-          response.data.expires_in,
-          response.data.refresh_token,
-          this.scope
-        );
+        const token = this.authenticationRepository.InsertSpotifyAuth({
+          accessToken: response.data.access_token,
+          tokenType: response.data.token_type,
+          expiresIn: response.data.expires_in,
+          refreshToken: response.data.refresh_token,
+          scope: this.scope,
+        });
         const { redirectUrl } =
           this.authenticationRepository.GetSpotifyAuthState("randomstring");
-        res.redirect(redirectUrl);
+        res.status(200).json({
+          accessToken: token,
+        });
         return;
       })
       .catch((error) => {
         console.error(error);
+        res.status(400).json({ message: error.message });
       });
     return;
   }
@@ -122,7 +127,24 @@ export default class SpotifyLogic {
       await axios
         .get("https://api.spotify.com/v1/me", {
           headers: {
-            Authorization: auth.tokenType + " " + auth.accessToken,
+            Authorization:
+              auth.spotify.tokenType + " " + auth.spotify.accessToken,
+          },
+        })
+        .then((response) => {
+          res.send(response.data);
+        });
+    }
+    res.send("Authorize page");
+  }
+  public async getPlaylists(req: Request, res: Response) {
+    const auth = this.authenticationRepository.GetSpotifyAuth();
+    if (auth) {
+      await axios
+        .get("https://api.spotify.com/v1/me/playlists", {
+          headers: {
+            Authorization:
+              auth.spotify.tokenType + " " + auth.spotify.accessToken,
           },
         })
         .then((response) => {
@@ -132,4 +154,20 @@ export default class SpotifyLogic {
     res.send("Authorize page");
   }
   // Class properties and methods go here
+  public async getArtists(req: Request, res: Response) {
+    const auth = this.authenticationRepository.GetSpotifyAuth();
+    if (auth) {
+      await axios
+        .get("https://api.spotify.com/v1/me/following?type=artist", {
+          headers: {
+            Authorization:
+              auth.spotify.tokenType + " " + auth.spotify.accessToken,
+          },
+        })
+        .then((response) => {
+          res.send(response.data);
+        });
+    }
+    res.send("Authorize page");
+  }
 }

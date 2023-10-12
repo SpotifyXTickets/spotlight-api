@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
+/** Base class with the base functions for determining routes etc. */
 export class AppController {
   private routes: {
     uri: string;
