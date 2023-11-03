@@ -10,6 +10,7 @@ export const Authenticated = async (
   if (authenticationLogic.CheckAuthorization(req, res)) {
     return next();
   }
+  console.log(req.headers.authorization);
   res.status(401).json({ error: "Unauthorized" });
   // await authenticationLogic.AuthorizeSpotify(req, res);
 

@@ -40,6 +40,11 @@ export default class HomeController extends AppController {
         middlewares: [Authenticated],
         method: this.getPlaylists,
       },
+      {
+        uri: "authorize",
+        middlewares: [NotAuthenticated],
+        method: this.authorize,
+      },
     ]);
   }
 

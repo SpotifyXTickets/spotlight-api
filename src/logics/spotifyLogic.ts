@@ -1,5 +1,4 @@
 import axios, { AxiosResponse } from "axios";
-import dotenv from "dotenv";
 import { Request, Response } from "express";
 import AuthenticationRepository from "../repositories/authenticationRepository";
 
@@ -11,11 +10,25 @@ export default class SpotifyLogic {
   public checkAuthorization(accessToken: string) {
     const auth = this.authenticationRepository.GetSpotifyAuth();
     if (auth && auth.accessToken === accessToken) {
+      // console.log(auth.spotify);
+      // console.log(Date.now());
+      // console.log(new Date(Date.now() - 1000 * auth.spotify.expiresIn));
+      // console.log(
+      //   auth.spotify.updatedAt <
+      //     new Date(Date.now() - 1000 * auth.spotify.expiresIn)
+      // );
       if (
-        auth.spotify.updatedAt < new Date(Date.now() - auth.spotify.expiresIn)
+        auth.spotify.updatedAt <
+        new Date(Date.now() - 1000 * auth.spotify.expiresIn)
       ) {
+        console.log("refresh");
         this.RefreshAuthorization(auth.spotify);
+        return true;
       }
+      return true;
+    } else if (auth) {
+      console.log(auth);
+      console.log("need to figure this out...");
       return true;
     }
     return false;
@@ -23,6 +36,7 @@ export default class SpotifyLogic {
   private scope: string =
     "user-read-private user-read-email user-follow-read playlist-read-private playlist-read-collaborative";
   private async RefreshAuthorization(auth: {
+    accessToken: string;
     refreshToken: string;
     scope: string;
   }) {
@@ -49,7 +63,7 @@ export default class SpotifyLogic {
         }
       )
       .then((response) => {
-        this.authenticationRepository.UpdateSpotifyAuth("", {
+        this.authenticationRepository.UpdateSpotifyAuth(auth.accessToken, {
           accessToken: response.data.access_token,
           tokenType: response.data.token_type,
           expiresIn: response.data.expires_in,
@@ -132,13 +146,19 @@ export default class SpotifyLogic {
           },
         })
         .then((response) => {
+          console.log(response.data);
           res.send(response.data);
+        })
+        .catch((error) => {
+          console.error(error);
+          res.status(400).json({ message: error.message });
         });
     }
     res.send("Authorize page");
   }
   public async getPlaylists(req: Request, res: Response) {
     const auth = this.authenticationRepository.GetSpotifyAuth();
+    console.log(auth);
     if (auth) {
       await axios
         .get("https://api.spotify.com/v1/me/playlists", {

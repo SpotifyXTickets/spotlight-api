@@ -74,8 +74,23 @@ export default class AuthenticationRepository {
     const index = AuthenticationRepository.fakeDatabase.auth.findIndex(
       (a) => a.accessToken === accessToken
     );
+    let randomString = (Math.random() + 1).toString(36).substring(7);
+    const token = jwt.encode(
+      {
+        spotify: {
+          accessToken: spotify.accessToken,
+          tokenType: spotify.tokenType,
+          expiresIn: spotify.expiresIn,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          refreshToken: spotify.refreshToken,
+          scope: spotify.scope,
+        },
+      },
+      randomString
+    );
     AuthenticationRepository.fakeDatabase.auth[index] = {
-      accessToken: accessToken,
+      accessToken: token,
       spotify: {
         accessToken: spotify.accessToken,
         tokenType: spotify.tokenType,
@@ -86,6 +101,8 @@ export default class AuthenticationRepository {
         scope: spotify.scope,
       },
     };
+
+    return token;
   }
   public getAuth(accessToken: string) {
     return (
@@ -95,7 +112,6 @@ export default class AuthenticationRepository {
     );
   }
   public GetSpotifyAuth() {
-    console.log(AuthenticationRepository.fakeDatabase.auth);
     return AuthenticationRepository.fakeDatabase.auth[0] ?? null;
   }
 }
