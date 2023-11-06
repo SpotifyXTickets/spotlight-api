@@ -1,4 +1,3 @@
-import axios from "axios";
 import { AppController } from "./appController";
 import { Response, Request, NextFunction } from "express";
 import SpotifyLogic from "../logics/spotifyLogic";
