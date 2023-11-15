@@ -1,0 +1,31 @@
+name: Docker Publish
+
+on:
+  push:
+    branches:
+      - main  # Change this to the branch you want to trigger the workflow on
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build and push Docker image
+      env:
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+        DOCKERHUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+      run: |
+        docker buildx create --use
+        docker buildx inspect --bootstrap
+
+        docker buildx build --platform linux/amd64,linux/arm64 -t ${{ secrets.DOCKER_HUB_USERNAME }}/spotifyxticketswap-backend:latest -t ${{ secrets.DOCKER_HUB_USERNAME }}/spotifyxticketswap-backend:$GITHUB_SHA .
+
+        echo $DOCKER_HUB_TOKEN | docker login -u $DOCKER_HUB_USERNAME --password-stdin
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/spotifyxticketswap-backend:latest
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/spotifyxticketswap-backend:$GITHUB_SHA
