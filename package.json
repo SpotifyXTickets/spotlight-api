@@ -8,7 +8,7 @@
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
     "nodemon": "nodemon src/index.ts",
-    "test": "jest --verbose --passWithNoTest"
+    "test": "jest --verbose --passWithNoTests"
   },
   "keywords": [],
   "author": "",
