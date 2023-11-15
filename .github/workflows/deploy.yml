@@ -3,7 +3,7 @@ name: JavaScript CI
 
 on: 
   push:
-    branches: ["live"]
+    branches: ["main"]
 
 env:
   AZURE_WEBAPP_NAME: my-app-name   # set this to your application's name
@@ -27,7 +27,6 @@ jobs:
         npm install
         npm run build --if-present
         npm run test --if-present
-      working-directory: my-app-path
     - name: 'Deploy to Azure WebApp'
       uses: azure/webapps-deploy@v2
       with: 
