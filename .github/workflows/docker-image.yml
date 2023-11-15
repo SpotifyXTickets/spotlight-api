@@ -6,9 +6,13 @@ name: Docker
 # documentation.
 
 on:
+  pull_request:
+    types: [closed]
+    branches: [ "live"]
   push:
-    branches:
-      - main
+    branches: [ "dev", 'v*', 'v*.*.*']
+    # Publish semver tags as releases.
+    tags: [ 'v*.*.*' ]
 jobs:
   docker:
     runs-on: ubuntu-latest
