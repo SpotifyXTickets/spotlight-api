@@ -2,7 +2,6 @@ import express, { Application, Request, Response } from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import routes from "./routes";
-import session from "express-session";
 import cors from "cors";
 dotenv.config();
 
@@ -15,14 +14,6 @@ app.use(
   })
 );
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET ?? "",
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false },
-  })
-);
 
 app.use("/", routes);
 
