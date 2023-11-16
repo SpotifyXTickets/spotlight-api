@@ -1,8 +1,6 @@
 import express, { Application, Request, Response } from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
-import session from "express-session";
-import routes from "./routes";
 import cors from "cors";
 //Import Swagger UI and the generated Swagger documentation options.
 import swaggerUi from "swagger-ui-express";
