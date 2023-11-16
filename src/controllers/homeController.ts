@@ -23,7 +23,6 @@ export default class HomeController extends AppController {
     this.setRoutes([
       {
         uri: "/",
-        middlewares: [Authenticated],
         method: this.index,
       },
       {
@@ -64,7 +63,7 @@ export default class HomeController extends AppController {
    *           description: Home page content.
    */
   public index(req: Request, res: Response): void {
-    res.send("Hello world!");
+    res.redirect("/api-docs");
   }
 
   /**
