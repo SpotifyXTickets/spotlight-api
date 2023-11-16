@@ -2,6 +2,7 @@ import express, { Application, Request, Response } from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import session from "express-session";
+import routes from "./routes";
 import cors from "cors";
 //Import Swagger UI and the generated Swagger documentation options.
 import swaggerUi from "swagger-ui-express";
@@ -18,14 +19,6 @@ app.use(
   })
 );
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET ?? "",
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false },
-  })
-);
 
 // Serve Swagger documentation at /swagger.json
 app.get("/swagger.json", (req: Request, res: Response) => {
