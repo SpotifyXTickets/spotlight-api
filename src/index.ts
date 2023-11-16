@@ -13,7 +13,7 @@ const app: Application = express();
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: `${process.env.FRONTEND_ORIGIN || "http://localhost:3000"}`,
   })
 );
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -30,7 +30,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // Your existing API routes
 app.use("/", routes);
 
-const PORT = process.env.NODE_PORT || 3000;
+const PORT = process.env.NODE_PORT || 8000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT http://localhost:${PORT}/`);

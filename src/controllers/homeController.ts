@@ -14,11 +14,8 @@ import SpotifyLogic from "../logics/spotifyLogic";
  */
 
 export default class HomeController extends AppController {
-  private spotifyLogic: SpotifyLogic;
-
   constructor() {
     super();
-    this.spotifyLogic = new SpotifyLogic();
 
     this.setRoutes([
       {
@@ -81,7 +78,8 @@ export default class HomeController extends AppController {
    *           description: A list of artists.
    */
   public async getArtists(req: Request, res: Response): Promise<void> {
-    await this.spotifyLogic.getArtists(req, res);
+    const spotifyLogic = new SpotifyLogic();
+    await spotifyLogic.getArtists(req, res);
   }
 
   /**
@@ -99,7 +97,8 @@ export default class HomeController extends AppController {
    *           description: User information.
    */
   public async getUser(req: Request, res: Response): Promise<void> {
-    await this.spotifyLogic.getUser(req, res);
+    const spotifyLogic = new SpotifyLogic();
+    await spotifyLogic.getUser(req, res);
   }
 
   /**
@@ -117,7 +116,8 @@ export default class HomeController extends AppController {
    *           description: Authorization response.
    */
   public async authorize(req: Request, res: Response): Promise<void> {
-    this.spotifyLogic.RequestAuthorization(req, res);
+    const spotifyLogic = new SpotifyLogic();
+    spotifyLogic.RequestAuthorization(req, res);
   }
 
   /**
@@ -135,7 +135,8 @@ export default class HomeController extends AppController {
    *           description: A list of user playlists.
    */
   public async getPlaylists(req: Request, res: Response): Promise<void> {
-    await this.spotifyLogic.getPlaylists(req, res);
+    const spotifyLogic = new SpotifyLogic();
+    await spotifyLogic.getPlaylists(req, res);
   }
 }
 
