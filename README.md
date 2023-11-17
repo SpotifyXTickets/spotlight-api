@@ -39,7 +39,7 @@ npm start
 
 ## API Documentation
 
-The API documentation is available at the `/api-docs` endpoint, thanks to Swagger. You can view the documentation by starting the server and navigating to `http://localhost:3000/api-docs` in your web browser.
+The API documentation is available at the `/api-docs` endpoint, thanks to Swagger. You can view the documentation by starting the server and navigating to `http://localhost:8000/api-docs` in your web browser.
 
 ## Built With
 
