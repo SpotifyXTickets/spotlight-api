@@ -8,7 +8,11 @@
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
     "nodemon": "nodemon src/index.ts",
-    "test": "jest --verbose --passWithNoTests"
+    "test": "jest --verbose --passWithNoTests",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write .",
+    "check-format": "prettier --check ."
   },
   "keywords": [],
   "author": "",
@@ -22,8 +26,7 @@
     "jest": "^29.7.0",
     "jose": "^5.0.1",
     "jwt-simple": "^0.5.6",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "ts-node": "^10.9.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.14",
@@ -31,10 +34,17 @@
     "@types/node": "^20.8.2",
     "@types/swagger-jsdoc": "^6.0.3",
     "@types/swagger-ui-express": "^4.1.6",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
     "express": "^4.18.2",
     "nodemon": "^3.0.1",
+    "prettier": "3.1.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.2.2"
   }
 }

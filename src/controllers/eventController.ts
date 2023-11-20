@@ -1,25 +1,25 @@
-import { Request, Response } from "express";
-import { AppController } from "./appController";
-import TicketMasterLogic from "../logics/ticketMasterLogic";
+import { Request, Response } from 'express'
+import { AppController } from './appController'
+import TicketMasterLogic from '../logics/ticketMasterLogic'
 
 export default class EventController extends AppController {
-  private ticketMasterLogic: TicketMasterLogic;
+  private ticketMasterLogic: TicketMasterLogic
 
   constructor() {
-    super();
-    this.ticketMasterLogic = new TicketMasterLogic();
+    super()
+    this.ticketMasterLogic = new TicketMasterLogic()
     this.setRoutes([
       {
-        uri: "/events",
+        uri: '/events',
         middlewares: [],
         method: this.getAllEvents,
       },
       {
-        uri: "/:musicGenre",
+        uri: '/:musicGenre',
         middlewares: [],
         method: this.getEventByMusicGenre,
       },
-    ]);
+    ])
   }
 
   /**
@@ -39,42 +39,42 @@ export default class EventController extends AppController {
    *                 $ref: '#/components/schemas/Event'  // Reference to Event schema (define this in Swagger options)
    */
   public async getAllEvents(req: Request, res: Response): Promise<void> {
-    const events = await this.ticketMasterLogic.getAllEvents();
+    const events = await this.ticketMasterLogic.getAllEvents()
 
     if (events === undefined) {
-      res.status(500).send("Error");
-      return;
+      res.status(500).send('Error')
+      return
     }
-    res.send(events);
+    res.send(events)
   }
 
   public async getClassifications(req: Request, res: Response): Promise<void> {
-    const ticketMasterLogic = new TicketMasterLogic();
-    const classifications = await ticketMasterLogic.getClassifications();
+    const ticketMasterLogic = new TicketMasterLogic()
+    const classifications = await ticketMasterLogic.getClassifications()
 
     if (classifications === undefined) {
-      res.status(500).send("Error");
-      return;
+      res.status(500).send('Error')
+      return
     }
-    res.send(classifications);
+    res.send(classifications)
   }
 
   public async getEventByMusicGenre(
     req: Request,
-    res: Response
+    res: Response,
   ): Promise<void> {
-    const genre = req.params.musicGenre;
-    const size = req.query.size ?? 20;
-    const ticketMasterLogic = new TicketMasterLogic();
+    const genre = req.params.musicGenre
+    const size = req.query.size ?? 20
+    const ticketMasterLogic = new TicketMasterLogic()
     const events = await ticketMasterLogic.getEventsByGenre(
       genre,
-      size as unknown as number
-    );
+      size as unknown as number,
+    )
 
     if (events === undefined) {
-      res.status(500).send("Error");
-      return;
+      res.status(500).send('Error')
+      return
     }
-    res.send(events);
+    res.send(events)
   }
 }

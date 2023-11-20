@@ -1,30 +1,30 @@
 export const getSpotify = {
   // operation's method
   get: {
-    tags: ["Get Spotify"], // operation's tag.
-    description: "Retrieve the home page content.",
+    tags: ['Get Spotify'], // operation's tag.
+    description: 'Retrieve the home page content.',
     security: [{ BearerAuth: [] }],
     responses: {
       200: {
-        description: "Home page content.",
+        description: 'Home page content.',
         content: {
-          "text/plain": {
+          'text/plain': {
             schema: {
-              type: "string",
+              type: 'string',
             },
           },
         },
       },
       500: {
-        description: "Internal server error.",
+        description: 'Internal server error.',
         content: {
-          "application/json": {
+          'application/json': {
             schema: {
-              type: "object",
+              type: 'object',
               properties: {
                 message: {
-                  type: "string",
-                  example: "Error occurred while fetching home page content.",
+                  type: 'string',
+                  example: 'Error occurred while fetching home page content.',
                 },
               },
             },
@@ -36,22 +36,22 @@ export const getSpotify = {
 
   // Get Artists
   getArtists: {
-    description: "Retrieve a list of artists.",
+    description: 'Retrieve a list of artists.',
     security: [{ BearerAuth: [] }],
     responses: {
       200: {
-        description: "A list of artists.",
+        description: 'A list of artists.',
       },
       500: {
-        description: "Internal server error.",
+        description: 'Internal server error.',
         content: {
-          "application/json": {
+          'application/json': {
             schema: {
-              type: "object",
+              type: 'object',
               properties: {
                 message: {
-                  type: "string",
-                  example: "Error occurred while fetching artists.",
+                  type: 'string',
+                  example: 'Error occurred while fetching artists.',
                 },
               },
             },
@@ -63,22 +63,22 @@ export const getSpotify = {
 
   // Get User
   getUser: {
-    description: "Retrieve user information.",
+    description: 'Retrieve user information.',
     security: [{ BearerAuth: [] }],
     responses: {
       200: {
-        description: "User information.",
+        description: 'User information.',
       },
       500: {
-        description: "Internal server error.",
+        description: 'Internal server error.',
         content: {
-          "application/json": {
+          'application/json': {
             schema: {
-              type: "object",
+              type: 'object',
               properties: {
                 message: {
-                  type: "string",
-                  example: "Error occurred while fetching user information.",
+                  type: 'string',
+                  example: 'Error occurred while fetching user information.',
                 },
               },
             },
@@ -90,22 +90,22 @@ export const getSpotify = {
 
   // Authorize User
   authorize: {
-    description: "Authorize user for the application.",
+    description: 'Authorize user for the application.',
     security: [{ BearerAuth: [] }],
     responses: {
       200: {
-        description: "Authorization response.",
+        description: 'Authorization response.',
       },
       500: {
-        description: "Internal server error.",
+        description: 'Internal server error.',
         content: {
-          "application/json": {
+          'application/json': {
             schema: {
-              type: "object",
+              type: 'object',
               properties: {
                 message: {
-                  type: "string",
-                  example: "Error occurred during authorization.",
+                  type: 'string',
+                  example: 'Error occurred during authorization.',
                 },
               },
             },
@@ -117,22 +117,22 @@ export const getSpotify = {
 
   // Get Playlists
   getPlaylists: {
-    description: "Retrieve playlists of the authenticated user.",
+    description: 'Retrieve playlists of the authenticated user.',
     security: [{ BearerAuth: [] }],
     responses: {
       200: {
-        description: "A list of user playlists.",
+        description: 'A list of user playlists.',
       },
       500: {
-        description: "Internal server error.",
+        description: 'Internal server error.',
         content: {
-          "application/json": {
+          'application/json': {
             schema: {
-              type: "object",
+              type: 'object',
               properties: {
                 message: {
-                  type: "string",
-                  example: "Error occurred while fetching user playlists.",
+                  type: 'string',
+                  example: 'Error occurred while fetching user playlists.',
                 },
               },
             },
@@ -141,6 +141,6 @@ export const getSpotify = {
       },
     },
   },
-};
+}
 
-export default getSpotify;
+export default getSpotify

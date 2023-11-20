@@ -1,7 +1,7 @@
-import getSpotify from "./get-spotify";
+import getSpotify from './get-spotify'
 
 export default {
-  "/spotify": {
+  '/spotify': {
     ...getSpotify,
   },
-};
+}

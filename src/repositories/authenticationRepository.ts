@@ -1,37 +1,37 @@
-import jwt from "jwt-simple";
+import jwt from 'jwt-simple'
 export default class AuthenticationRepository {
   private static fakeDatabase: {
     auth: Array<{
-      accessToken: string;
+      accessToken: string
       spotify: {
-        accessToken: string;
-        tokenType: string;
-        expiresIn: number;
-        createdAt: Date;
-        updatedAt: Date;
-        refreshToken: string;
-        scope: string;
-      };
-    }>;
-    authState: { state: string; redirectUrl: string };
-  } = { auth: [], authState: { state: "", redirectUrl: "" } };
+        accessToken: string
+        tokenType: string
+        expiresIn: number
+        createdAt: Date
+        updatedAt: Date
+        refreshToken: string
+        scope: string
+      }
+    }>
+    authState: { state: string; redirectUrl: string }
+  } = { auth: [], authState: { state: '', redirectUrl: '' } }
   public SetSpotifyAuthState(state: string, redirectUrl: string) {
     AuthenticationRepository.fakeDatabase.authState = {
       state,
       redirectUrl,
-    };
+    }
   }
   public GetSpotifyAuthState(state: string) {
-    return AuthenticationRepository.fakeDatabase.authState;
+    return AuthenticationRepository.fakeDatabase.authState
   }
   public InsertSpotifyAuth(spotify: {
-    accessToken: string;
-    tokenType: string;
-    expiresIn: number;
-    refreshToken: string;
-    scope: string;
+    accessToken: string
+    tokenType: string
+    expiresIn: number
+    refreshToken: string
+    scope: string
   }): string {
-    let randomString = (Math.random() + 1).toString(36).substring(7);
+    const randomString = (Math.random() + 1).toString(36).substring(7)
     const token = jwt.encode(
       {
         spotify: {
@@ -44,8 +44,8 @@ export default class AuthenticationRepository {
           scope: spotify.scope,
         },
       },
-      randomString
-    );
+      randomString,
+    )
     AuthenticationRepository.fakeDatabase.auth.push({
       accessToken: token,
       spotify: {
@@ -57,24 +57,24 @@ export default class AuthenticationRepository {
         refreshToken: spotify.refreshToken,
         scope: spotify.scope,
       },
-    });
+    })
 
-    return token;
+    return token
   }
   public UpdateSpotifyAuth(
     accessToken: string,
     spotify: {
-      accessToken: string;
-      tokenType: string;
-      expiresIn: number;
-      refreshToken: string;
-      scope: string;
-    }
+      accessToken: string
+      tokenType: string
+      expiresIn: number
+      refreshToken: string
+      scope: string
+    },
   ) {
     const index = AuthenticationRepository.fakeDatabase.auth.findIndex(
-      (a) => a.accessToken === accessToken
-    );
-    let randomString = (Math.random() + 1).toString(36).substring(7);
+      (a) => a.accessToken === accessToken,
+    )
+    const randomString = (Math.random() + 1).toString(36).substring(7)
     const token = jwt.encode(
       {
         spotify: {
@@ -87,8 +87,8 @@ export default class AuthenticationRepository {
           scope: spotify.scope,
         },
       },
-      randomString
-    );
+      randomString,
+    )
     AuthenticationRepository.fakeDatabase.auth[index] = {
       accessToken: token,
       spotify: {
@@ -100,18 +100,18 @@ export default class AuthenticationRepository {
         refreshToken: spotify.refreshToken,
         scope: spotify.scope,
       },
-    };
+    }
 
-    return token;
+    return token
   }
   public getAuth(accessToken: string) {
     return (
       AuthenticationRepository.fakeDatabase.auth.find(
-        (a) => a.accessToken === accessToken
+        (a) => a.accessToken === accessToken,
       ) ?? null
-    );
+    )
   }
   public GetSpotifyAuth() {
-    return AuthenticationRepository.fakeDatabase.auth[0] ?? null;
+    return AuthenticationRepository.fakeDatabase.auth[0] ?? null
   }
 }

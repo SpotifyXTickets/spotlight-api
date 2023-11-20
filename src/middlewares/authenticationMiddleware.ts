@@ -1,29 +1,29 @@
-import { Request, Response, NextFunction } from "express";
-import AuthenticationLogic from "../logics/authenticationLogic";
+import { Request, Response, NextFunction } from 'express'
+import AuthenticationLogic from '../logics/authenticationLogic'
 
 export const Authenticated = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
-  const authenticationLogic = new AuthenticationLogic();
+  const authenticationLogic = new AuthenticationLogic()
   if (authenticationLogic.CheckAuthorization(req, res)) {
-    return next();
+    return next()
   }
-  console.log(req.headers.authorization);
-  res.status(401).json({ error: "Unauthorized" });
+  console.log(req.headers.authorization)
+  res.status(401).json({ error: 'Unauthorized' })
   // await authenticationLogic.AuthorizeSpotify(req, res);
 
-  next();
-};
+  next()
+}
 export const NotAuthenticated = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
-  const authenticationLogic = new AuthenticationLogic();
+  const authenticationLogic = new AuthenticationLogic()
   if (!authenticationLogic.CheckAuthorization(req, res)) {
-    next();
+    next()
   }
-  res.status(401).json({ error: "Already authenticated" });
-};
+  res.status(401).json({ error: 'Already authenticated' })
+}

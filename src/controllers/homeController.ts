@@ -1,10 +1,10 @@
-import { AppController } from "./appController";
-import { Request, Response } from "express";
+import { AppController } from './appController'
+import { Request, Response } from 'express'
 import {
   Authenticated,
   NotAuthenticated,
-} from "../middlewares/authenticationMiddleware";
-import SpotifyLogic from "../logics/spotifyLogic";
+} from '../middlewares/authenticationMiddleware'
+import SpotifyLogic from '../logics/spotifyLogic'
 
 /**
  * @swagger
@@ -15,34 +15,34 @@ import SpotifyLogic from "../logics/spotifyLogic";
 
 export default class HomeController extends AppController {
   constructor() {
-    super();
+    super()
 
     this.setRoutes([
       {
-        uri: "/",
+        uri: '/',
         method: this.index,
       },
       {
-        uri: "/artist",
+        uri: '/artist',
         middlewares: [Authenticated],
         method: this.getArtists,
       },
       {
-        uri: "/user",
+        uri: '/user',
         middlewares: [Authenticated],
         method: this.getUser,
       },
       {
-        uri: "/authorize",
+        uri: '/authorize',
         middlewares: [NotAuthenticated],
         method: this.authorize,
       },
       {
-        uri: "/playlist",
+        uri: '/playlist',
         middlewares: [Authenticated],
         method: this.getPlaylists,
       },
-    ]);
+    ])
   }
 
   /**
@@ -60,7 +60,7 @@ export default class HomeController extends AppController {
    *           description: Home page content.
    */
   public index(req: Request, res: Response): void {
-    res.redirect("/api-docs");
+    res.redirect('/api-docs')
   }
 
   /**
@@ -78,8 +78,8 @@ export default class HomeController extends AppController {
    *           description: A list of artists.
    */
   public async getArtists(req: Request, res: Response): Promise<void> {
-    const spotifyLogic = new SpotifyLogic();
-    await spotifyLogic.getArtists(req, res);
+    const spotifyLogic = new SpotifyLogic()
+    await spotifyLogic.getArtists(req, res)
   }
 
   /**
@@ -97,8 +97,8 @@ export default class HomeController extends AppController {
    *           description: User information.
    */
   public async getUser(req: Request, res: Response): Promise<void> {
-    const spotifyLogic = new SpotifyLogic();
-    await spotifyLogic.getUser(req, res);
+    const spotifyLogic = new SpotifyLogic()
+    await spotifyLogic.getUser(req, res)
   }
 
   /**
@@ -116,8 +116,8 @@ export default class HomeController extends AppController {
    *           description: Authorization response.
    */
   public async authorize(req: Request, res: Response): Promise<void> {
-    const spotifyLogic = new SpotifyLogic();
-    spotifyLogic.RequestAuthorization(req, res);
+    const spotifyLogic = new SpotifyLogic()
+    spotifyLogic.RequestAuthorization(req, res)
   }
 
   /**
@@ -135,9 +135,9 @@ export default class HomeController extends AppController {
    *           description: A list of user playlists.
    */
   public async getPlaylists(req: Request, res: Response): Promise<void> {
-    const spotifyLogic = new SpotifyLogic();
-    await spotifyLogic.getPlaylists(req, res);
+    const spotifyLogic = new SpotifyLogic()
+    await spotifyLogic.getPlaylists(req, res)
   }
 }
 
-module.exports = HomeController;
+module.exports = HomeController
