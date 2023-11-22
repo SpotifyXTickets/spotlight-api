@@ -3,10 +3,8 @@ import dotenv from 'dotenv'
 
 export default class EventixLogic {
   public RequestAuthorization() {
-    const state = 'randomstring'
-    console.log(
-      `https://auth.openticket.tech/token/authorize?client_id=${process.env.EVENTIX_CLIENT_ID}&redirect_uri=${process.env.EVENTIX_REDIRECT_URI}&state=${state}&response_type=code`,
-    )
+    let state = "randomstring";
+
     axios
       .get('https://auth.openticket.tech/token/authorize', {
         params: {
