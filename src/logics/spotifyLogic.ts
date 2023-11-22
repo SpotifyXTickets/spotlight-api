@@ -1,6 +1,11 @@
+import { AccessToken } from "./../models/accessToken";
+import { AccessTokenRepository } from "./../repositories/accessTokenRepository";
 import axios, { AxiosResponse } from "axios";
 import { Request, Response } from "express";
 import AuthenticationRepository from "../repositories/authenticationRepository";
+import jwt from "jwt-simple";
+import { User } from "../models/user";
+import { ObjectId } from "bson";
 
 export default class SpotifyLogic {
   private authenticationRepository: AuthenticationRepository;
@@ -99,6 +104,7 @@ export default class SpotifyLogic {
   }
 
   public async RequestAccessToken(code: string, state: string, res: Response) {
+    const accessTokenRepository = new AccessTokenRepository();
     await axios
       .post(
         "https://accounts.spotify.com/api/token",
@@ -115,14 +121,46 @@ export default class SpotifyLogic {
           },
         }
       )
-      .then((response) => {
-        const token = this.authenticationRepository.InsertSpotifyAuth({
-          accessToken: response.data.access_token,
-          tokenType: response.data.token_type,
-          expiresIn: response.data.expires_in,
-          refreshToken: response.data.refresh_token,
-          scope: this.scope,
-        });
+      .then(async (response) => {
+        // Get user for creation of a JWT token...
+        // const t = response.data.access_token;
+        // const ty = response.data.token_type;
+        // const user = await axios
+        //   .get("https://api.spotify.com/v1/me", {
+        //     headers: {
+        //       Authorization: ty + " " + t,
+        //     },
+        //   })
+        //   .then((response) => {
+        //     console.log(response.data);
+        //   })
+        //   .catch((error) => {
+        //     console.error(error);
+        //   });
+        // console.log(user);
+
+        const token = await accessTokenRepository.createAccessToken(
+          response.data.access_token,
+          response.data.expires_in,
+          response.data.refresh_token,
+          {
+            _id: new ObjectId(1),
+            email: "",
+            country: "NL",
+            images: [],
+            display_name: "",
+          } as User
+        );
+
+        console.log(token);
+
+        // const token = this.authenticationRepository.InsertSpotifyAuth({
+        //   accessToken: response.data.access_token,
+        //   tokenType: response.data.token_type,
+        //   expiresIn: response.data.expires_in,
+        //   refreshToken: response.data.refresh_token,
+        //   scope: this.scope,
+        // });
         const { redirectUrl } =
           this.authenticationRepository.GetSpotifyAuthState("randomstring");
         res.status(200).json({

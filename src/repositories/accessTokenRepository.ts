@@ -11,7 +11,8 @@ export class AccessTokenRepository extends CoreRepository {
   }
 
   async getAccessToken(AccessToken: string): Promise<AccessToken> {
-    return (await this.collection.findOne({
+    await this.initalizeMongo();
+    return (await this.collection!.findOne({
       accessToken: AccessToken,
     })) as AccessToken;
   }
@@ -22,6 +23,7 @@ export class AccessTokenRepository extends CoreRepository {
     refresh_token: string,
     user: User
   ): Promise<string | boolean> {
+    await this.initalizeMongo();
     const token = jwt.encode(
       {
         spotifyId: user._id,
@@ -39,11 +41,12 @@ export class AccessTokenRepository extends CoreRepository {
       expiresIn: expiresIn,
       refreshToken: refresh_token,
     } as AccessToken;
-    const result = await this.collection.insertOne(accessToken);
+    const result = await this.collection!.insertOne(accessToken);
     return result.acknowledged ? token : false;
   }
 
   async updateAccessToken(accessToken: AccessToken): Promise<boolean> {
+    await this.initalizeMongo();
     const oldtoken = jwt.decode(
       accessToken.accessToken,
       process.env.JWT_SECRET_KEY ?? "supersecretkey"
@@ -60,7 +63,7 @@ export class AccessTokenRepository extends CoreRepository {
       },
       process.env.JWT_SECRET_KEY ?? "supersecretkey"
     );
-    const result = await this.collection.updateOne(
+    const result = await this.collection!.updateOne(
       { _id: accessToken._id },
       {
         $set: {

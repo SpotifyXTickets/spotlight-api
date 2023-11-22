@@ -1,38 +1,75 @@
-import { MongoClient, Db, Collection } from "mongodb";
+import { MongoClient, Db, Collection, ServerApiVersion } from "mongodb";
 
 export abstract class CoreRepository {
-  protected db!: Db;
-  protected collection!: Collection;
+  protected db?: Db;
+  protected collection?: Collection;
+  private collectionName: string;
+  private client: MongoClient;
 
   constructor(collectionName: string, testDb?: Db) {
-    if (!testDb) {
-      MongoClient.connect(
-        process.env.MONGODB_URL ?? "mongodb://localhost:27017"
-      )
-        .then((client) => {
-          this.db = client.db("CitricDB");
-          if (!this.collectionExists(collectionName)) {
-            this.createCollection(collectionName);
-          }
-          this.collection = this.db.collection(collectionName);
-        })
-        .catch((error) => console.error(error));
-    } else {
-      this.db = testDb;
-      if (!this.collectionExists(collectionName)) {
-        this.createCollection(collectionName);
+    this.client = new MongoClient(
+      process.env.MONGODB_URL ?? "mongodb://localhost:27017",
+      {
+        serverApi: {
+          version: ServerApiVersion.v1,
+          strict: true,
+          deprecationErrors: true,
+        },
       }
-      this.collection = this.db.collection(collectionName);
+    );
+    // if (!testDb) {
+    //   MongoClient.connect(
+    //     process.env.MONGODB_URL ?? "mongodb://localhost:27017"
+    //   )
+    //     .then((client) => {
+    //       this.db = client.db("CitricDB");
+    //       if (!this.collectionExists(collectionName)) {
+    //         this.createCollection(collectionName);
+    //       }
+    //       this.collection = this.db.collection(collectionName);
+    //     })
+    //     .catch((error) => {
+    //       console.error(error);
+    //     });
+    // } else {
+    //   this.db = testDb;
+    //   if (!this.collectionExists(collectionName)) {
+    //     this.createCollection(collectionName);
+    //   }
+    //   this.collection = this.db.collection(collectionName);
+    // }
+    this.collectionName = collectionName;
+  }
+
+  protected async initalizeMongo(): Promise<void> {
+    if (!this.db) {
+      try {
+        const host = process.env.MONGODB_URL ?? "mongodb://localhost:27017";
+        await this.client.connect();
+        await this.client.db("CitricDB").command({ ping: 1 });
+        this.db = this.client.db("CitricDB");
+        if (!this.collectionExists(this.collectionName)) {
+          this.createCollection(this.collectionName);
+        }
+        this.collection = this.db.collection(this.collectionName);
+      } catch (error) {
+        console.error(error);
+      }
     }
   }
 
-  protected async createCollection(collectionName: string): Promise<void> {
-    await this.db.createCollection(collectionName);
+  private async createCollection(collectionName: string): Promise<void> {
+    if (!this.db) {
+      await this.initalizeMongo();
+    }
+    await this.db!.createCollection(collectionName);
   }
 
-  protected async collectionExists(collectionName: string): Promise<boolean> {
-    return await this.db
-      .listCollections()
+  private async collectionExists(collectionName: string): Promise<boolean> {
+    if (!this.db) {
+      await this.initalizeMongo();
+    }
+    return await this.db!.listCollections()
       .toArray()
       .then((collections) => {
         return collections.some(
