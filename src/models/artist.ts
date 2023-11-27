@@ -1,5 +1,7 @@
+import { ObjectId } from "bson";
+
 export type Artist = {
-  _id: string;
+  _id: ObjectId;
   spotifyId?: string;
   ticketMasterId?: string;
   name: string;

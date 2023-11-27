@@ -24,12 +24,32 @@ services:
       TICKET_MASTER_SECRET: nZ3klE5VHd9cpVk6
       SESSION_SECRET: keyboardcat
       JWT_SECRET_KEY: aoifijiawfejifaejiojefiuae9wjfq
+      MONGODB_URL: mongodb://user:pass@mongodb:27017/?retryWrites=true&w=majority
     ports:
       - 8000:8000
+    depends_on:
+      - mongodb
+    networks:
+      - node-network
+
   mongodb:
-    image: mongo
+    image: mongodb/mongodb-community-server:6.0-ubi8
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=user
+      - MONGODB_INITDB_ROOT_PASSWORD=pass
     ports:
       - 27017:27017
+    volumes:
+      - mongodbdata:/data/db
+    networks:
+      - node-network
+
+volumes:
+  mongodbdata:
+
+networks:
+  node-network:
+    driver: bridge
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to
 # start the database before your application. The `db-data` volume persists the

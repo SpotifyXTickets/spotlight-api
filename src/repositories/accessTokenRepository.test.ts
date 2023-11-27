@@ -1,154 +1,161 @@
-import { AccessToken } from "./../models/accessToken";
-import { MongoClient, ObjectId } from "mongodb";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { AccessTokenRepository } from "./accessTokenRepository";
-import crypto from "crypto";
 import jwt from "jwt-simple";
-import { User } from "../models/user";
+import AccessToken from "../models/accessToken";
+import { faker } from "@faker-js/faker";
+import { ObjectId } from "mongodb";
+import { DB } from "../db/db";
 
 let mongoServer: MongoMemoryServer;
 let accessTokenRepo: AccessTokenRepository;
 
+function generateAccessToken(): AccessToken {
+  const createdAt = faker.date.recent();
+  return {
+    _id: new ObjectId(faker.database.mongodbObjectId()),
+    accessToken: "",
+    spotifyAccessToken: faker.string.uuid(),
+    createdAt: createdAt,
+    updatedAt: new Date(
+      createdAt.setDate(
+        createdAt.getDate() + faker.number.int({ min: 1, max: 10 })
+      )
+    ),
+    expiresIn: 3600,
+    refreshToken: faker.string.uuid(),
+  } as AccessToken;
+}
+
 beforeAll(async () => {
   mongoServer = new MongoMemoryServer();
   await mongoServer.start();
-  const mongoUri = await mongoServer.getUri();
-  const client = new MongoClient(mongoUri);
-  await client.connect();
-  const db = client.db("CitricDB");
-  accessTokenRepo = new AccessTokenRepository(db);
+  const mongoUri = mongoServer.getUri();
+  process.env["MONGODB_URL"] = mongoUri;
+  process.env["MONGO_DBNAME"] = "CitricDB";
+  await DB.connect();
+
+  accessTokenRepo = new AccessTokenRepository();
+});
+
+beforeEach(async () => {
+  const db = await DB.getDB();
+  if (
+    (
+      await db
+        .listCollections({ name: accessTokenRepo.collectionName })
+        .toArray()
+    ).length !== 1
+  ) {
+    await db.createCollection(accessTokenRepo.collectionName);
+  }
+});
+
+afterEach(async () => {
+  const db = await DB.getDB();
+  await db.dropCollection(accessTokenRepo.collectionName);
 });
 
 afterAll(async () => {
+  const client = await DB.getClient();
+  client.close(true);
   await mongoServer.stop();
 });
 
-test("should insert an access token into collection", async () => {
-  const token = jwt.encode(
-    {
-      displayName: "test user",
-      spotifyId: 1,
-      images: [
-        {
-          url: "https://i.scdn.co/image/ab67757000003b82b31612cf7ad7a78fe404b561",
-          height: 64,
-          width: 64,
-        },
-        {
-          url: "https://i.scdn.co/image/ab67757000003b82b31612cf7ad7a78fe404b561",
-          height: 300,
-          width: 300,
-        },
-      ],
-    },
-    "supersecretkey"
-  );
-  const user = {
-    _id: new ObjectId(1),
-    display_name: "test user",
-    country: "US",
-    email: "test@gmail.com",
-    images: [
-      {
-        url: "https://i.scdn.co/image/ab67757000003b82b31612cf7ad7a78fe404b561",
-        height: 64,
-        width: 64,
-      },
-      {
-        url: "https://i.scdn.co/image/ab67757000003b82b31612cf7ad7a78fe404b561",
-        height: 300,
-        width: 300,
-      },
-    ],
-  } as User;
-  await accessTokenRepo.createAccessToken(
-    "iasfjeiojawfiefwefewf",
-    3600,
-    "iwfehjiofiojweoijfiwej",
-    user
-  );
-  const savedToken = await accessTokenRepo.getAccessToken(token);
-  // expect(savedToken).toEqual(accessToken);
+describe("AccessToken get functions", () => {
+  let accessTokens = [] as AccessToken[];
+  beforeEach(async () => {
+    for (let i = 0; i < 10; i++) {
+      const accessToken = generateAccessToken();
+      const token = await accessTokenRepo.createAccessToken(
+        accessToken.spotifyAccessToken,
+        accessToken.expiresIn,
+        accessToken.refreshToken
+      );
+      if (token) {
+        accessToken.accessToken = token as string;
+        accessTokens.push(accessToken);
+      }
+    }
+  });
+
+  afterEach(async () => {
+    accessTokens = [];
+  });
+
+  test("should get an access token by token", async () => {
+    const token = await accessTokenRepo.getAccessToken(
+      accessTokens[0].accessToken
+    );
+    expect(token?.accessToken).toEqual(accessTokens[0].accessToken);
+    expect(token?.spotifyAccessToken).toEqual(
+      accessTokens[0].spotifyAccessToken
+    );
+    expect(token?.refreshToken).toEqual(accessTokens[0].refreshToken);
+  });
+
+  test("should get an access token by refresh token", async () => {
+    const token = await accessTokenRepo.getAccessTokenByRefreshToken(
+      accessTokens[0].refreshToken
+    );
+    expect(token?.accessToken).toEqual(accessTokens[0].accessToken);
+    expect(token?.spotifyAccessToken).toEqual(
+      accessTokens[0].spotifyAccessToken
+    );
+    expect(token?.refreshToken).toEqual(accessTokens[0].refreshToken);
+  });
 });
 
-test("should update an access token", async () => {
-  const token = jwt.encode(
-    {
-      displayName: "test user",
-      spotifyId: 1,
-      createdAt: new Date(),
-      images: [
-        {
-          url: "https://i.scdn.co/image/ab67757000003b82b31612cf7ad7a78fe404b561",
-          height: 64,
-          width: 64,
-        },
-        {
-          url: "https://i.scdn.co/image/ab67757000003b82b31612cf7ad7a78fe404b561",
-          height: 300,
-          width: 300,
-        },
-      ],
-    },
-    "supersecretkey"
-  );
-  const user = {
-    _id: new ObjectId(1),
-    display_name: "test user",
-    country: "US",
-    email: "test@gmail.com",
-    images: [
-      {
-        url: "https://i.scdn.co/image/ab67757000003b82b31612cf7ad7a78fe404b561",
-        height: 64,
-        width: 64,
-      },
-      {
-        url: "https://i.scdn.co/image/ab67757000003b82b31612cf7ad7a78fe404b561",
-        height: 300,
-        width: 300,
-      },
-    ],
-  } as User;
-  const accessToken = {
-    _id: new ObjectId(1),
-    accessToken: token,
-    spotifyAccessToken: "aifejiowjfiowjqef",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    expiresIn: 3600,
-    refreshToken: "ijefiowjqoefjoqijif",
-  };
-  await accessTokenRepo.createAccessToken(
-    "aifejiowjfiowjqef",
-    3600,
-    "ijefiowjqoefjoqijif",
-    user
-  );
-  const savedToken = await accessTokenRepo.getAccessToken(token);
-  const secondToken = jwt.encode(
-    {
-      displayName: "test user",
-      spotifyId: 1,
-      createdAt: new Date(),
-      images: [
-        {
-          url: "https://i.scdn.co/image/ab67757000003b82b31612cf7ad7a78fe404b561",
-          height: 64,
-          width: 64,
-        },
-        {
-          url: "https://i.scdn.co/image/ab67757000003b82b31612cf7ad7a78fe404b561",
-          height: 300,
-          width: 300,
-        },
-      ],
-    },
-    "supersecretkey"
-  );
-  savedToken.accessToken = secondToken;
-  await accessTokenRepo.updateAccessToken(savedToken);
-  const updatedToken = await accessTokenRepo.getAccessToken(secondToken);
-  expect(secondToken).not.toEqual(token);
-  expect(updatedToken.accessToken).toEqual(secondToken);
+describe("AccessToken create functions", () => {
+  test("should create an access token", async () => {
+    const accessToken = generateAccessToken();
+    const token = await accessTokenRepo.createAccessToken(
+      accessToken.spotifyAccessToken,
+      accessToken.expiresIn,
+      accessToken.refreshToken
+    );
+    const dbToken = await accessTokenRepo.getAccessToken(token as string);
+    expect(dbToken?.spotifyAccessToken).toEqual(accessToken.spotifyAccessToken);
+    expect(dbToken?.refreshToken).toEqual(accessToken.refreshToken);
+  });
 });
+
+describe("AccessToken update functions", () => {
+  let accessTokens = [] as AccessToken[];
+  beforeAll(async () => {
+    for (let i = 0; i < 10; i++) {
+      const accessToken = generateAccessToken();
+      const token = await accessTokenRepo.createAccessToken(
+        accessToken.spotifyAccessToken,
+        accessToken.expiresIn,
+        accessToken.refreshToken
+      );
+      if (token) {
+        accessToken.accessToken = token as string;
+        accessTokens.push(accessToken);
+      }
+    }
+  });
+
+  afterEach(async () => {
+    accessTokens = [];
+  });
+
+  test("should update an access token", async () => {
+    const token = await accessTokenRepo.getAccessToken(
+      accessTokens[0].accessToken
+    );
+    token!.spotifyAccessToken = faker.string.uuid();
+    const updatedToken = await accessTokenRepo.updateAccessToken(token!);
+    const dbUpdatedToken = await accessTokenRepo.getAccessToken(
+      updatedToken as string
+    );
+    expect(updatedToken).not.toEqual(accessTokens[0].accessToken);
+    expect(dbUpdatedToken?.createdAt).toEqual(token!.createdAt);
+    expect(dbUpdatedToken?.updatedAt).not.toEqual(token!.updatedAt);
+    expect(dbUpdatedToken?.spotifyAccessToken).toEqual(
+      token!.spotifyAccessToken
+    );
+  });
+});
+
+describe("AccessToken delete functions", () => {});

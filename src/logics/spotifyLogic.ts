@@ -14,28 +14,24 @@ export default class SpotifyLogic {
     this.authenticationRepository = new AuthenticationRepository();
     this.apiHost = process.env.FRONTEND_ORIGIN || "http://localhost:3000";
   }
-  public checkAuthorization(accessToken: string) {
-    const auth = this.authenticationRepository.GetSpotifyAuth();
-    if (auth && auth.accessToken === accessToken) {
-      // console.log(auth.spotify);
-      // console.log(Date.now());
-      // console.log(new Date(Date.now() - 1000 * auth.spotify.expiresIn));
-      // console.log(
-      //   auth.spotify.updatedAt <
-      //     new Date(Date.now() - 1000 * auth.spotify.expiresIn)
-      // );
-      if (
-        auth.spotify.updatedAt <
-        new Date(Date.now() - 1000 * auth.spotify.expiresIn)
-      ) {
+  public async checkAuthorization(
+    accessToken: string
+  ): Promise<boolean | string> {
+    const accessTokenRepository = new AccessTokenRepository();
+    const token = await accessTokenRepository.getAccessToken(accessToken);
+    if (token) {
+      if (token.updatedAt < new Date(Date.now() - 1000 * token.expiresIn)) {
         console.log("refresh");
-        this.RefreshAuthorization(auth.spotify);
-        return true;
+        const refreshedToken = await this.RefreshAuthorization({
+          accessToken: token.spotifyAccessToken,
+          refreshToken: token.refreshToken,
+        });
+
+        if (refreshedToken) {
+          return refreshedToken as string;
+        }
+        return false;
       }
-      return true;
-    } else if (auth) {
-      console.log(auth);
-      console.log("need to figure this out...");
       return true;
     }
     return false;
@@ -45,9 +41,12 @@ export default class SpotifyLogic {
   private async RefreshAuthorization(auth: {
     accessToken: string;
     refreshToken: string;
-    scope: string;
-  }) {
-    await axios
+  }): Promise<string | boolean> {
+    const accessTokenRepository = new AccessTokenRepository();
+    const oldToken = accessTokenRepository.getAccessTokenByRefreshToken(
+      auth.refreshToken
+    );
+    const newToken = await axios
       .post(
         "https://accounts.spotify.com/api/token",
         new URLSearchParams({
@@ -69,18 +68,18 @@ export default class SpotifyLogic {
           },
         }
       )
-      .then((response) => {
-        this.authenticationRepository.UpdateSpotifyAuth(auth.accessToken, {
-          accessToken: response.data.access_token,
-          tokenType: response.data.token_type,
-          expiresIn: response.data.expires_in,
-          refreshToken: auth.refreshToken,
-          scope: auth.scope,
-        });
+      .then(async (response) => {
+        const token = await oldToken;
+        return await accessTokenRepository.updateAccessToken({
+          ...token,
+          spotifyAccessToken: response.data.access_token,
+        } as AccessToken);
       })
       .catch((error) => {
         console.error(error);
+        return false;
       });
+    return newToken;
   }
   public async RequestAuthorization(
     req: Request,
@@ -125,31 +124,12 @@ export default class SpotifyLogic {
         // Get user for creation of a JWT token...
         // const t = response.data.access_token;
         // const ty = response.data.token_type;
-        // const user = await axios
-        //   .get("https://api.spotify.com/v1/me", {
-        //     headers: {
-        //       Authorization: ty + " " + t,
-        //     },
-        //   })
-        //   .then((response) => {
-        //     console.log(response.data);
-        //   })
-        //   .catch((error) => {
-        //     console.error(error);
-        //   });
         // console.log(user);
 
         const token = await accessTokenRepository.createAccessToken(
           response.data.access_token,
           response.data.expires_in,
-          response.data.refresh_token,
-          {
-            _id: new ObjectId(1),
-            email: "",
-            country: "NL",
-            images: [],
-            display_name: "",
-          } as User
+          response.data.refresh_token
         );
 
         console.log(token);
@@ -175,43 +155,45 @@ export default class SpotifyLogic {
     return;
   }
 
-  public async getUser(req: Request, res: Response) {
-    const auth = this.authenticationRepository.GetSpotifyAuth();
-    if (auth) {
-      await axios
+  public async getUser(apiKey: string) {
+    const accessTokenRepository = new AccessTokenRepository();
+    const accessToken = await accessTokenRepository.getAccessToken(apiKey);
+    if (accessToken) {
+      const data = await axios
         .get("https://api.spotify.com/v1/me", {
           headers: {
-            Authorization:
-              auth.spotify.tokenType + " " + auth.spotify.accessToken,
+            Authorization: "Bearer " + accessToken.spotifyAccessToken,
           },
         })
         .then((response) => {
           console.log(response.data);
-          res.send(response.data);
+          return response.data;
         })
         .catch((error) => {
           console.error(error);
-          res.status(400).json({ message: error.message });
+          return null;
         });
+      if (data) {
+        return data;
+      }
     }
-    res.send("Authorize page");
+    return false;
   }
-  public async getPlaylists(req: Request, res: Response) {
-    const auth = this.authenticationRepository.GetSpotifyAuth();
-    console.log(auth);
-    if (auth) {
-      await axios
+  public async getPlaylists(apiKey: string) {
+    const accessTokenRepository = new AccessTokenRepository();
+    const accessToken = await accessTokenRepository.getAccessToken(apiKey);
+    if (accessToken) {
+      return await axios
         .get("https://api.spotify.com/v1/me/playlists", {
           headers: {
-            Authorization:
-              auth.spotify.tokenType + " " + auth.spotify.accessToken,
+            Authorization: "Bearer " + accessToken.spotifyAccessToken,
           },
         })
         .then((response) => {
-          res.send(response.data);
+          return response.data;
         });
     }
-    res.send("Authorize page");
+    return false;
   }
   // Class properties and methods go here
   public async getArtists(req: Request, res: Response) {

@@ -6,6 +6,7 @@ import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocs from "./docs"; // Adjust the path as per our project structure
 import routes from "./routes";
+import { DB } from "./db/db";
 dotenv.config();
 
 const app: Application = express();
@@ -31,6 +32,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use("/", routes);
 
 const PORT = process.env.NODE_PORT || 8000;
+DB.connect();
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT http://localhost:${PORT}/`);

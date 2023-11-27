@@ -1,5 +1,7 @@
+import { ObjectId } from "bson";
+
 export type Track = {
-  _id: string; // will be the same as the trackId from spotify.
+  _id: ObjectId; // will be the same as the trackId from spotify.
   name: string;
   accousticness: number;
   danceability: number;

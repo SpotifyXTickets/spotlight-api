@@ -1,5 +1,7 @@
+import { ObjectId } from "bson";
+
 export type Event = {
-  _id: string; // Will be the same as the ticketMasterId for the event.
+  _id: ObjectId; // Will be the same as the ticketMasterId for the event.
   meanScore: number;
   city: string;
   state: string;

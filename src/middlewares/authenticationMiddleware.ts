@@ -7,22 +7,31 @@ export const Authenticated = async (
   next: NextFunction
 ) => {
   const authenticationLogic = new AuthenticationLogic();
-  if (authenticationLogic.CheckAuthorization(req, res)) {
+  const tokenCheck = await authenticationLogic.CheckAuthorization(
+    req.headers.authorization?.split(" ")[1]
+  );
+  if (tokenCheck !== false) {
+    if (tokenCheck !== true) {
+      res.set("Authorization", "Bearer " + tokenCheck);
+    }
     return next();
   }
-  console.log(req.headers.authorization);
+
   res.status(401).json({ error: "Unauthorized" });
-  // await authenticationLogic.AuthorizeSpotify(req, res);
 
   next();
 };
-export const NotAuthenticated = (
+export const NotAuthenticated = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const authenticationLogic = new AuthenticationLogic();
-  if (!authenticationLogic.CheckAuthorization(req, res)) {
+  if (
+    !(await authenticationLogic.CheckAuthorization(
+      req.headers.authorization?.split(" ")[1]
+    ))
+  ) {
     next();
   }
   res.status(401).json({ error: "Already authenticated" });
