@@ -69,10 +69,7 @@ export default class RecommendationController extends AppController {
 
     const recommendationsLogic = new RecommendationsLogic(playlist, eventsV2);
 
-    res.send(
-      "Recommendation page " +
-        JSON.stringify(await recommendationsLogic.recommendEvent())
-    );
+    res.send(JSON.stringify(await recommendationsLogic.recommendEvent()));
   }
 }
 
