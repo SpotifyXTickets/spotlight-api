@@ -28,8 +28,46 @@ export default class RecommendationController extends AppController {
       event4: [0.492, 0.825, 0.158, 0.381, 0.714, 0.937, 0.27, 0.603, 0.826],
       event5: [0.615, 0.948, 0.271, 0.604, 0.937, 0.16, 0.493, 0.826, 0.159],
     };
+    var eventsV2: { [key: string]: any } = {
+      event1: {
+        name: "event1",
+        eventMetaData: [
+          0.123, 0.456, 0.789, 0.321, 0.654, 0.987, 0.135, 0.468, 0.791,
+        ],
+        date: "2021-01-01",
+        location: "Location event1",
+        ticketStartingPrice: 10,
+        eventDescription: "Description event1",
+        spotifyArtistID: "1u7uShzlA1tXJeox3jMFPq", // De jeugd van tegenwoordig
+        eventImage: "lorempicsum.com/200/200",
+      },
+      event2: {
+        name: "event2",
+        eventMetaData: [
+          0.246, 0.579, 0.802, 0.135, 0.468, 0.791, 0.024, 0.357, 0.68,
+        ],
+        date: "2021-01-01",
+        location: "Location event2",
+        ticketStartingPrice: 10,
+        eventDescription: "Description event2",
+        spotifyArtistID: "6s5ubAp65wXoTZefE01RNR", // Joost
+        eventImage: "lorempicsum.com/200/200",
+      },
+      event3: {
+        name: "event3",
+        eventMetaData: [
+          0.369, 0.702, 0.925, 0.258, 0.591, 0.814, 0.147, 0.48, 0.703,
+        ],
+        date: "2021-01-01",
+        location: "Location event3",
+        ticketStartingPrice: 10,
+        eventDescription: "Description event3",
+        spotifyArtistID: "23951Pg9PiLB8Uza3k12g6", // The opposites
+        eventImage: "lorempicsum.com/200/200",
+      },
+    };
 
-    const recommendationsLogic = new RecommendationsLogic(playlist, events);
+    const recommendationsLogic = new RecommendationsLogic(playlist, eventsV2);
 
     res.send(
       "Recommendation page " +

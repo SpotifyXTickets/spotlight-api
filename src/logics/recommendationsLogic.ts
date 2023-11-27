@@ -1,10 +1,23 @@
 export default class RecommendationsLogic {
   private playlist: number[];
-  private events: { [key: string]: number[] };
+  private events: { [key: string]: any };
 
-  constructor(playlist: number[], events: { [key: string]: number[] }) {
+  private similarity: {
+    [key: string]: {
+      name: string;
+      recommendationScore: any;
+      date: string;
+      location: string;
+      ticketStartingPrice: number;
+      eventDescription: string;
+      spotifyArtistID: string;
+    };
+  };
+
+  constructor(playlist: number[], events: { [key: string]: any }) {
     this.playlist = playlist;
     this.events = events;
+    this.similarity = {};
   }
 
   // Define the function to calculate cosine similarity
@@ -28,15 +41,23 @@ export default class RecommendationsLogic {
     return sumAiBi / Math.sqrt(sumAiAi * sumBiBi);
   }
 
-  public recommendEvent(): { [key: string]: number } {
-    console.log("Recommendation page logging");
-    var similarity: { [key: string]: number } = {};
-
+  public recommendEvent() {
     for (let key in this.events) {
-      similarity[key] = this.cosineSimilarity(this.playlist, this.events[key]);
+      // similarity[key] = this.cosineSimilarity(this.playlist, this.events[key]);
+      // console.log(key + " " + similarity[key]);
+      this.similarity[key] = {
+        name: this.events[key].name,
+        recommendationScore: this.cosineSimilarity(
+          this.playlist,
+          this.events[key].eventMetaData
+        ),
+        date: this.events[key].date,
+        location: this.events[key].location,
+        ticketStartingPrice: this.events[key].ticketStartingPrice,
+        eventDescription: this.events[key].eventDescription,
+        spotifyArtistID: this.events[key].spotifyArtistID,
+      };
     }
-
-    console.log(similarity);
-    return similarity;
+    return this.similarity;
   }
 }
