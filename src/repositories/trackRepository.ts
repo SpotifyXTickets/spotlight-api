@@ -34,9 +34,7 @@ export class TrackRepository extends CoreRepository {
     return data as unknown as Track;
   }
 
-  public async getTracksByArtistId(
-    artistSpotifyId: ObjectId
-  ): Promise<Track[]> {
+  public async getTracksByArtistId(artistSpotifyId: string): Promise<Track[]> {
     const trackIds = await this.getKeysFromRelationTable("artistTracks", {
       foreignKey: artistSpotifyId,
     });
@@ -49,8 +47,8 @@ export class TrackRepository extends CoreRepository {
       await this.collection
     )
       .find({
-        _id: {
-          $in: trackIds as ObjectId[],
+        spotifyId: {
+          $in: trackIds as string[],
         },
       })
       .toArray();

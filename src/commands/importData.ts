@@ -20,6 +20,7 @@ import {
 import { TrackRepository } from "../repositories/trackRepository";
 import Track from "../models/track";
 import { SpotifyTopTrackType } from "../types/spotifyTypes";
+import RecommendationsLogic from "../logics/recommendationsLogic";
 
 dotenv.config();
 const obtainRefreshToken = async (backendTokenCollection: Collection) => {
@@ -65,6 +66,7 @@ const startProcessing = async (db: Db, spotifyLogic: SpotifyLogic) => {
   const eventRepository = new EventRepository();
   const artistRepository = new ArtistRepository();
   const trackRepository = new TrackRepository();
+  const recommendationsLogic = new RecommendationsLogic();
   const eventResponse = await ticketMasterLogic.getAllEvents(200);
   const { links, events } = eventResponse as {
     events: TicketMasterEventType[];
@@ -278,6 +280,7 @@ const startProcessing = async (db: Db, spotifyLogic: SpotifyLogic) => {
   }
 
   const artistData = (await Promise.all(artistCalls)).flat();
+  const clonedArtistData = Object.assign([], artistData) as Artist[];
   const trackCalls: Promise<SpotifyTopTrackType[]>[] = [];
 
   while (artistData.length > 0) {
@@ -342,6 +345,23 @@ const startProcessing = async (db: Db, spotifyLogic: SpotifyLogic) => {
   }
 
   const acousticData = (await Promise.all(acousticCalls)).flat();
+  const artistMeanCalls: Promise<void>[] = [];
+
+  clonedArtistData.forEach((artist) => {
+    artistMeanCalls.push(
+      new Promise(async (resolve, reject) => {
+        const topTracks = await trackRepository.getTracksByArtistId(
+          artist.spotifyId as string
+        );
+        const meanScore = recommendationsLogic.generateMeanScore(topTracks);
+        artist.setMeanScore(meanScore);
+        await artistRepository.updateArtist(artist);
+        resolve();
+      })
+    );
+  });
+
+  await Promise.all(artistMeanCalls);
 
   console.log("Artists imported!");
 };

@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc",
     "fetchData": "ts-node src/commands/importData.ts",
+    "recreateMeanScore": "ts-node src/commands/recreateMeanScores.ts",
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
     "nodemon": "nodemon src/index.ts",

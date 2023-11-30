@@ -195,8 +195,6 @@ export abstract class CoreRepository {
 
     const data = await relationCollection
       .find({
-        foreignTable: relation.foreignTable,
-        originTable: this.collectionName,
         [keyName]: keyValue,
       })
       .toArray();

@@ -47,4 +47,11 @@ export class EventRepository extends CoreRepository {
     ).findOne({ ticketMasterId: ticketMasterId });
     return data ? (data as unknown as Event) : false;
   }
+
+  public async updateEvent(event: Event): Promise<boolean | Event> {
+    const data = await (
+      await this.collection
+    ).updateOne({ _id: event._id }, { $set: event });
+    return data.acknowledged ? event : false;
+  }
 }

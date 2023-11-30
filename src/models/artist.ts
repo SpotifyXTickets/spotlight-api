@@ -84,6 +84,11 @@ export class Artist {
         : ""
       : "";
   }
+
+  public setMeanScore(score: number) {
+    this.meanScore = score;
+    return;
+  }
 }
 
 export default Artist;

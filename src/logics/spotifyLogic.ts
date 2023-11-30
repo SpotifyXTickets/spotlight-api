@@ -10,8 +10,10 @@ import { Artist } from "../models/artist";
 import {
   SpotifyArtistType,
   SpotifyAudioFeaturesType,
+  SpotifyPlaylistType,
   SpotifyTopTrackType,
 } from "../types/spotifyTypes";
+import Track from "../models/track";
 
 export default class SpotifyLogic {
   private authenticationRepository: AuthenticationRepository;
@@ -143,8 +145,14 @@ export default class SpotifyLogic {
         // console.log(user);
 
         if (redirectUri === undefined) {
+          const token = await accessTokenRepository.createAccessToken(
+            response.data.access_token,
+            response.data.expires_in,
+            response.data.refresh_token
+          );
+
           return {
-            accessToken: response.data.access_token as string,
+            accessToken: token,
             expiresIn: response.data.expires_in as number,
             tokenType: response.data.token_type as string,
             error: null,
@@ -224,7 +232,9 @@ export default class SpotifyLogic {
     }
     return false;
   }
-  public async getPlaylists(apiKey: string) {
+  public async getPlaylists(
+    apiKey: string
+  ): Promise<SpotifyPlaylistType[] | boolean> {
     const accessTokenRepository = new AccessTokenRepository();
     const accessToken = await accessTokenRepository.getAccessToken(apiKey);
     if (accessToken) {
@@ -235,7 +245,30 @@ export default class SpotifyLogic {
           },
         })
         .then((response) => {
-          return response.data;
+          return response.data.items as SpotifyPlaylistType[];
+        })
+        .catch((error) => {
+          console.error(error);
+          return false;
+        });
+    }
+    return false;
+  }
+  public async getPlaylistTracks(apiKey: string, playlistId: string) {
+    const accessTokenRepository = new AccessTokenRepository();
+    const accessToken = await accessTokenRepository.getAccessToken(apiKey);
+    if (accessToken) {
+      return await axios
+        .get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+          headers: {
+            Authorization: "Bearer " + accessToken.spotifyAccessToken,
+          },
+        })
+        .then((response) => {
+          const items = response.data.items as any[];
+          return items.map((item) => {
+            return item.track as SpotifyTopTrackType;
+          });
         })
         .catch((error) => {
           console.error(error);
