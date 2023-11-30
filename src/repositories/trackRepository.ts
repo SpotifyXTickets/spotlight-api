@@ -4,18 +4,33 @@ import CoreRepository from "./coreRepository";
 
 export class TrackRepository extends CoreRepository {
   constructor() {
-    super("tracks", [
-      {
-        name: "artistTracks",
-        foreignTable: "artists",
-        primaryKey: "_id",
-        foreignKey: "spotifyId",
-      },
-    ]);
+    super(
+      "tracks",
+      ["spotifyId"],
+      [
+        {
+          name: "artistTracks",
+          foreignTable: "artists",
+          primaryKey: "spotifyId",
+          foreignKey: "spotifyId",
+        },
+      ]
+    );
   }
 
-  public async getTrack(trackSpotifyId: ObjectId): Promise<Track> {
-    const data = (await this.collection).findOne({ _id: trackSpotifyId });
+  public async linkTracktoArtist(
+    track: Track,
+    artistId: string | number
+  ): Promise<void> {
+    await this.insertIntoRelationTable(
+      "artistTracks",
+      artistId,
+      track.spotifyId
+    );
+  }
+
+  public async getTrack(trackSpotifyId: string): Promise<Track> {
+    const data = (await this.collection).findOne({ spotifyId: trackSpotifyId });
     return data as unknown as Track;
   }
 
@@ -43,11 +58,7 @@ export class TrackRepository extends CoreRepository {
     return tracks as unknown as Track[];
   }
 
-  public async createTrackFromArtist(
-    track: Track,
-    artistId: ObjectId
-  ): Promise<Track | boolean> {
-    this.insertIntoRelationTable("artistTracks", artistId, track._id);
+  public async createTrack(track: Track): Promise<Track | boolean> {
     const collection = await this.collection;
 
     const data = await collection.insertOne(track);

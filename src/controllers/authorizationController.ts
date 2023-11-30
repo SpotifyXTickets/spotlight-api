@@ -31,13 +31,16 @@ export default class AuthorizationController extends AppController {
 
   public async authorizeSpotify(req: Request, res: Response): Promise<void> {
     const spotifyLogic = new SpotifyLogic();
-    await spotifyLogic.RequestAccessToken(
+    const tokenResponse = await spotifyLogic.RequestAccessToken(
       req.query.code as string,
-      req.query.state as string,
-      res
+      req.query.state as string
     );
+    if (tokenResponse.error !== null) res.status(400).send(tokenResponse.error);
+
+    res.status(200).send({
+      accessToken: tokenResponse.accessToken,
+    });
     return;
-    res.send("Authorize page");
   }
 }
 

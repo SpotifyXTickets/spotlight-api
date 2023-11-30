@@ -10,7 +10,7 @@ export default class EventController extends AppController {
     this.ticketMasterLogic = new TicketMasterLogic();
     this.setRoutes([
       {
-        uri: "/events",
+        uri: "/",
         middlewares: [],
         method: this.getAllEvents,
       },
@@ -39,8 +39,10 @@ export default class EventController extends AppController {
    *                 $ref: '#/components/schemas/Event'  // Reference to Event schema (define this in Swagger options)
    */
   public async getAllEvents(req: Request, res: Response): Promise<void> {
-    const events = await this.ticketMasterLogic.getAllEvents();
+    const ticketMasterLogic = new TicketMasterLogic();
+    const events = await ticketMasterLogic.getAllEvents();
 
+    console.log(events);
     if (events === undefined) {
       res.status(500).send("Error");
       return;

@@ -20,6 +20,7 @@ export abstract class CoreRepository {
 
   constructor(
     collectionName: string,
+    uniqueIndexes?: string[],
     mtmRelations?: Array<{
       name: string;
       foreignTable: string;
@@ -47,14 +48,19 @@ export abstract class CoreRepository {
           try {
             if (this.relations.length > 0) {
               this.relations.forEach(async (relation) => {
-                const relCollection = await db.createCollection(relation.name);
-                await relCollection.createIndex(
-                  {
-                    [collectionName + "Id"]: 1,
-                    [relation.foreignTable + "Id"]: 1,
-                  },
-                  { unique: true }
-                );
+                const relCollection = db.collection(relation.name);
+                if (
+                  (await db.listCollections({ name: relation.name }).toArray())
+                    .length < 1
+                ) {
+                  await relCollection.createIndex(
+                    {
+                      [collectionName + "Id"]: 1,
+                      [relation.foreignTable + "Id"]: 1,
+                    },
+                    { unique: true }
+                  );
+                }
               });
             }
             resolve();
@@ -64,6 +70,11 @@ export abstract class CoreRepository {
         });
 
         const primaryCollection = db.collection(collectionName);
+        if (uniqueIndexes) {
+          uniqueIndexes.forEach(async (index) => {
+            await primaryCollection.createIndex(index, { unique: true });
+          });
+        }
         await relationPromise;
         resolve(primaryCollection);
       } catch (e) {
@@ -87,8 +98,8 @@ export abstract class CoreRepository {
 
   protected async insertIntoRelationTable(
     relationName: string,
-    foreignKey: ObjectId,
-    primaryKey: ObjectId
+    foreignKey: ObjectId | number | string,
+    primaryKey: ObjectId | number | string
   ): Promise<boolean> {
     const relationCollection = await this.getRelationCollection(relationName);
     const relation = this.relations.find(
@@ -99,19 +110,25 @@ export abstract class CoreRepository {
       return false;
     }
 
-    const data = await relationCollection.insertOne({
-      foreignTable: relation.foreignTable,
-      originTable: this.collectionName,
-      [relation.foreignTable + "Id"]: foreignKey,
-      [this.collectionName + "Id"]: primaryKey,
-    });
+    try {
+      const data = await relationCollection.insertOne({
+        foreignTable: relation.foreignTable,
+        originTable: this.collectionName,
+        [relation.foreignTable + "Id"]: foreignKey,
+        [this.collectionName + "Id"]: primaryKey,
+      });
 
-    return data.acknowledged;
+      return data.acknowledged;
+    } catch (e) {
+      return false;
+    }
   }
 
   protected async removeFromRelationTable(
     relationName: string,
-    anyKey: { foreignKey: ObjectId } | { primaryKey: ObjectId }
+    anyKey:
+      | { foreignKey: ObjectId | number | string }
+      | { primaryKey: ObjectId | number | string }
   ): Promise<boolean> {
     const relationCollection = await this.getRelationCollection(relationName);
     const relation = this.relations.find(
@@ -123,14 +140,16 @@ export abstract class CoreRepository {
     }
 
     let keyName = "";
-    let keyValue: ObjectId;
+    let keyValue: ObjectId | number | string;
 
     if (anyKey.hasOwnProperty("foreignKey")) {
       keyName = relation.foreignTable + "Id";
-      keyValue = (anyKey as { foreignKey: ObjectId }).foreignKey;
+      keyValue = (anyKey as { foreignKey: ObjectId | number | string })
+        .foreignKey;
     } else if (anyKey.hasOwnProperty("primaryKey")) {
       keyName = this.collectionName + "Id";
-      keyValue = (anyKey as { primaryKey: ObjectId }).primaryKey;
+      keyValue = (anyKey as { primaryKey: ObjectId | number | string })
+        .primaryKey;
     } else {
       return false;
     }
@@ -146,8 +165,10 @@ export abstract class CoreRepository {
 
   protected async getKeysFromRelationTable(
     relationName: string,
-    anyKey: { foreignKey: ObjectId } | { primaryKey: ObjectId }
-  ): Promise<ObjectId[] | boolean> {
+    anyKey:
+      | { foreignKey: ObjectId | number | string }
+      | { primaryKey: ObjectId | number | string }
+  ): Promise<ObjectId[] | number[] | string[] | boolean> {
     const relationCollection = await this.getRelationCollection(relationName);
     const relation = this.relations.find(
       (relation) => relation.name === relationName
@@ -158,14 +179,16 @@ export abstract class CoreRepository {
     }
 
     let keyName = "";
-    let keyValue: ObjectId;
+    let keyValue: ObjectId | number | string;
 
     if (anyKey.hasOwnProperty("foreignKey")) {
       keyName = relation.foreignTable + "Id";
-      keyValue = (anyKey as { foreignKey: ObjectId }).foreignKey;
+      keyValue = (anyKey as { foreignKey: ObjectId | number | string })
+        .foreignKey;
     } else if (anyKey.hasOwnProperty("primaryKey")) {
       keyName = this.collectionName + "Id";
-      keyValue = (anyKey as { primaryKey: ObjectId }).primaryKey;
+      keyValue = (anyKey as { primaryKey: ObjectId | number | string })
+        .primaryKey;
     } else {
       return [];
     }

@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "fetchData": "ts-node src/commands/importData.ts",
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
     "nodemon": "nodemon src/index.ts",

@@ -79,7 +79,10 @@ export default class HomeController extends AppController {
    */
   public async getArtists(req: Request, res: Response): Promise<void> {
     const spotifyLogic = new SpotifyLogic();
-    await spotifyLogic.getArtists(req, res);
+    const artists = await spotifyLogic.getFollowingArtists(
+      req.headers.authorization!.split(" ")[1]
+    );
+    res.status(200).send(artists);
   }
 
   /**

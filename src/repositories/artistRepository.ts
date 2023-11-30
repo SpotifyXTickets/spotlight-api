@@ -3,7 +3,18 @@ import CoreRepository from "./coreRepository";
 
 export class ArtistRepository extends CoreRepository {
   constructor() {
-    super("artists");
+    super(
+      "artists",
+      ["spotifyId", "ticketMasterId"],
+      [
+        {
+          name: "artistEvents",
+          foreignTable: "events",
+          primaryKey: "ticketMasterId",
+          foreignKey: "ticketMasterId",
+        },
+      ]
+    );
   }
 
   public async getArtists(): Promise<Artist[]> {
@@ -12,7 +23,11 @@ export class ArtistRepository extends CoreRepository {
   }
 
   public async createArtist(artist: Artist): Promise<Artist | boolean> {
-    const data = await (await this.collection).insertOne(artist);
-    return data.acknowledged ? artist : false;
+    try {
+      const data = await (await this.collection).insertOne(artist);
+      return data.acknowledged ? artist : false;
+    } catch (err) {
+      return false;
+    }
   }
 }

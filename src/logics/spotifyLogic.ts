@@ -6,6 +6,12 @@ import AuthenticationRepository from "../repositories/authenticationRepository";
 import jwt from "jwt-simple";
 import { User } from "../models/user";
 import { ObjectId } from "bson";
+import { Artist } from "../models/artist";
+import {
+  SpotifyArtistType,
+  SpotifyAudioFeaturesType,
+  SpotifyTopTrackType,
+} from "../types/spotifyTypes";
 
 export default class SpotifyLogic {
   private authenticationRepository: AuthenticationRepository;
@@ -38,7 +44,7 @@ export default class SpotifyLogic {
   }
   private scope: string =
     "user-read-private user-read-email user-follow-read playlist-read-private playlist-read-collaborative";
-  private async RefreshAuthorization(auth: {
+  public async RefreshAuthorization(auth: {
     accessToken: string;
     refreshToken: string;
   }): Promise<string | boolean> {
@@ -83,7 +89,8 @@ export default class SpotifyLogic {
   }
   public async RequestAuthorization(
     req: Request,
-    res: Response
+    res: Response,
+    redirectUri?: string
   ): Promise<void> {
     const scope = this.scope;
     this.authenticationRepository.SetSpotifyAuthState(
@@ -96,20 +103,29 @@ export default class SpotifyLogic {
           response_type: "code",
           client_id: process.env.SPOTIFY_CLIENT_ID || "",
           scope,
-          redirect_uri: `${this.apiHost}/spotify_authorizer`,
+          redirect_uri: redirectUri ?? `${this.apiHost}/spotify_authorizer`,
           state: "randomstring",
         }).toString()
     );
   }
 
-  public async RequestAccessToken(code: string, state: string, res: Response) {
+  public async RequestAccessToken(
+    code: string,
+    state: string,
+    redirectUri?: string
+  ): Promise<{
+    accessToken: string;
+    expiresIn: number;
+    refreshToken: string;
+    error?: string;
+  }> {
     const accessTokenRepository = new AccessTokenRepository();
-    await axios
+    const token = await axios
       .post(
         "https://accounts.spotify.com/api/token",
         new URLSearchParams({
           grant_type: "authorization_code",
-          redirect_uri: `${this.apiHost}/spotify_authorizer`,
+          redirect_uri: redirectUri ?? `${this.apiHost}/spotify_authorizer`,
           code,
           client_id: process.env.SPOTIFY_CLIENT_ID || "",
           client_secret: process.env.SPOTIFY_CLIENT_SECRET || "",
@@ -126,13 +142,29 @@ export default class SpotifyLogic {
         // const ty = response.data.token_type;
         // console.log(user);
 
+        if (redirectUri === undefined) {
+          return {
+            accessToken: response.data.access_token as string,
+            expiresIn: response.data.expires_in as number,
+            tokenType: response.data.token_type as string,
+            error: null,
+          };
+        }
+
         const token = await accessTokenRepository.createAccessToken(
           response.data.access_token,
           response.data.expires_in,
           response.data.refresh_token
         );
 
-        console.log(token);
+        if (!token) {
+          return {
+            accessToken: "",
+            expiresIn: 3600,
+            refreshToken: "",
+            error: "Could not create access token",
+          };
+        }
 
         // const token = this.authenticationRepository.InsertSpotifyAuth({
         //   accessToken: response.data.access_token,
@@ -143,16 +175,29 @@ export default class SpotifyLogic {
         // });
         const { redirectUrl } =
           this.authenticationRepository.GetSpotifyAuthState("randomstring");
-        res.status(200).json({
-          accessToken: token,
-        });
-        return;
+
+        return {
+          accessToken: token as string,
+          expiresIn: response.data.expires_in as number,
+          refreshToken: response.data.refresh_token as string,
+          error: null,
+        };
       })
       .catch((error) => {
         console.error(error);
-        res.status(400).json({ message: error.message });
+        return {
+          accessToken: "",
+          expiresIn: 3600,
+          refreshToken: "",
+          error: error,
+        };
       });
-    return;
+    return {
+      accessToken: token.accessToken as string,
+      expiresIn: token.expiresIn,
+      refreshToken: token.refreshToken as string,
+      error: token.error,
+    };
   }
 
   public async getUser(apiKey: string) {
@@ -191,25 +236,94 @@ export default class SpotifyLogic {
         })
         .then((response) => {
           return response.data;
+        })
+        .catch((error) => {
+          console.error(error);
+          return false;
         });
     }
     return false;
   }
   // Class properties and methods go here
-  public async getArtists(req: Request, res: Response) {
-    const auth = this.authenticationRepository.GetSpotifyAuth();
-    if (auth) {
-      await axios
-        .get("https://api.spotify.com/v1/me/following?type=artist", {
+  public async getFollowingArtists(apiKey: string): Promise<any[]> {
+    await axios
+      .get("https://api.spotify.com/v1/me/following?type=artist", {
+        headers: {
+          Authorization: "Bearer " + apiKey,
+        },
+      })
+      .then((response) => {
+        return response.data;
+      });
+    return [];
+  }
+
+  public async getArtistsByIds(
+    apiKey: string,
+    artistIds: string[]
+  ): Promise<SpotifyArtistType[]> {
+    return await axios
+      .get(`https://api.spotify.com/v1/artists?ids=${artistIds.toString()}`, {
+        headers: {
+          Authorization: "Bearer " + apiKey,
+        },
+      })
+      .then((response) => {
+        console.log(response.data);
+        const artists = response.data.artists as SpotifyArtistType[];
+        return artists.filter((artist) => artist !== null);
+      })
+      .catch((error) => {
+        if (error.response.status === 401) {
+          console.log("401");
+          return [];
+        }
+        console.error(error);
+        return [];
+      });
+  }
+
+  public async getTopTracksOfArtist(
+    apiKey: string,
+    artistId: string
+  ): Promise<SpotifyTopTrackType[]> {
+    return await axios
+      .get(
+        `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=NL`,
+        {
           headers: {
-            Authorization:
-              auth.spotify.tokenType + " " + auth.spotify.accessToken,
+            Authorization: "Bearer " + apiKey,
           },
-        })
-        .then((response) => {
-          res.send(response.data);
-        });
-    }
-    res.send("Authorize page");
+        }
+      )
+      .then((response) => {
+        return response.data.tracks;
+      })
+      .catch((error) => {
+        console.error(error);
+        return false;
+      });
+  }
+
+  public async getTracksAudioFeatures(
+    apiKey: string,
+    trackIds: string[]
+  ): Promise<SpotifyAudioFeaturesType[]> {
+    return await axios
+      .get(
+        `https://api.spotify.com/v1/audio-features?ids=${trackIds.toString()}`,
+        {
+          headers: {
+            Authorization: "Bearer " + apiKey,
+          },
+        }
+      )
+      .then((response) => {
+        return response.data.audio_features as SpotifyAudioFeaturesType[];
+      })
+      .catch((error) => {
+        console.error(error);
+        return [];
+      });
   }
 }
