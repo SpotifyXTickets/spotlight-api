@@ -79,7 +79,10 @@ export default class HomeController extends AppController {
    */
   public async getArtists(req: Request, res: Response): Promise<void> {
     const spotifyLogic = new SpotifyLogic();
-    await spotifyLogic.getArtists(req, res);
+    const artists = await spotifyLogic.getFollowingArtists(
+      req.headers.authorization!.split(" ")[1]
+    );
+    res.status(200).send(artists);
   }
 
   /**
@@ -98,7 +101,10 @@ export default class HomeController extends AppController {
    */
   public async getUser(req: Request, res: Response): Promise<void> {
     const spotifyLogic = new SpotifyLogic();
-    await spotifyLogic.getUser(req, res);
+    const user = await spotifyLogic.getUser(
+      req.headers.authorization!.split(" ")[1]
+    );
+    res.send(user);
   }
 
   /**
@@ -117,7 +123,7 @@ export default class HomeController extends AppController {
    */
   public async authorize(req: Request, res: Response): Promise<void> {
     const spotifyLogic = new SpotifyLogic();
-    spotifyLogic.RequestAuthorization(req, res);
+    await spotifyLogic.RequestAuthorization(req, res);
   }
 
   /**
@@ -136,7 +142,18 @@ export default class HomeController extends AppController {
    */
   public async getPlaylists(req: Request, res: Response): Promise<void> {
     const spotifyLogic = new SpotifyLogic();
-    await spotifyLogic.getPlaylists(req, res);
+    if (req.headers.authorization === undefined) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const data = await spotifyLogic.getPlaylists(
+      req.headers.authorization!.split(" ")[1]
+    );
+
+    res.set("Authorization", "test");
+    data
+      ? res.status(200).json(data)
+      : res.status(400).json({ error: "Something went wrong" });
   }
 }
 
