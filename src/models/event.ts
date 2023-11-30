@@ -1,4 +1,5 @@
 import { ObjectId } from "bson";
+import Track from "./track";
 
 export type Event = {
   _id: ObjectId; // Will be the same as the ticketMasterId for the event.
@@ -16,6 +17,9 @@ export type Event = {
   ticketLink: string;
   startDate: Date;
   endDate?: Date;
+  _embedded?: {
+    tracks: Track[];
+  };
 };
 
 export default Event;

@@ -1,6 +1,7 @@
 import { ObjectId } from "bson";
 import { SpotifyArtistType } from "../types/spotifyTypes";
 import { TicketMasterArtistType } from "../types/ticketMasterTypes";
+import Track from "./track";
 
 type ArtistType = {
   _id: ObjectId;
@@ -32,6 +33,9 @@ export class Artist {
   youtube?: string;
   spotify?: string;
   lastfm?: string;
+  _embedded?: {
+    tracks: Track[];
+  };
 
   constructor(
     spotifyArtistData?: SpotifyArtistType | null,

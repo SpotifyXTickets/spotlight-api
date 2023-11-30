@@ -18,8 +18,7 @@ export const Authenticated = async (
   }
 
   res.status(401).json({ error: "Unauthorized" });
-
-  next();
+  return;
 };
 export const NotAuthenticated = async (
   req: Request,

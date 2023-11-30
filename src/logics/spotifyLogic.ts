@@ -230,7 +230,7 @@ export default class SpotifyLogic {
         return data;
       }
     }
-    return false;
+    return null;
   }
   public async getPlaylists(
     apiKey: string
@@ -344,12 +344,14 @@ export default class SpotifyLogic {
     apiKey: string,
     trackIds: string[]
   ): Promise<SpotifyAudioFeaturesType[]> {
+    const accessTokenRepository = new AccessTokenRepository();
+    const accessToken = await accessTokenRepository.getAccessToken(apiKey);
     return await axios
       .get(
         `https://api.spotify.com/v1/audio-features?ids=${trackIds.toString()}`,
         {
           headers: {
-            Authorization: "Bearer " + apiKey,
+            Authorization: "Bearer " + accessToken?.spotifyAccessToken,
           },
         }
       )

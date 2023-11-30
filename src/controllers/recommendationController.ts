@@ -17,13 +17,25 @@ export default class RecommendationController extends AppController {
   }
 
   public async recommendEvent(req: Request, res: Response): Promise<void> {
+    if (req.headers.authorization === undefined) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const playlistIds = req.query.playlistIds
+      ? ((req.query.playlistIds as string).split(",") as string[])
+      : [];
     // Test data
     // Data order should be [Danceability, Energy, Loudness, Speechiness, Acousticness, Instrumentalness, Liveness, Valence, Tempo]
     // All data should be scaled down to a value between 0 and 1
 
     const apiKey = req.headers.authorization!.split(" ")[1];
     const recommendationsLogic = new RecommendationsLogic();
-    const events = await recommendationsLogic.recommendEvent(apiKey);
+    const events = (
+      await recommendationsLogic.recommendEvent(apiKey, playlistIds)
+    ).slice(0, 6);
+
+    res.send();
     // var playlist = [
     //   0.633, 0.162, 0.104, 0.475, 0.923, 0.933, 0.252, 0.195, 0.726,
     // ];

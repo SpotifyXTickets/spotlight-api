@@ -104,7 +104,12 @@ export default class HomeController extends AppController {
     const user = await spotifyLogic.getUser(
       req.headers.authorization!.split(" ")[1]
     );
-    res.send(user);
+
+    if (!user) {
+      res.status(401).json({ error: "Something went wrong" });
+      return;
+    }
+    res.status(200).send(user);
   }
 
   /**
@@ -150,7 +155,6 @@ export default class HomeController extends AppController {
       req.headers.authorization!.split(" ")[1]
     );
 
-    res.set("Authorization", "test");
     data
       ? res.status(200).json(data)
       : res.status(400).json({ error: "Something went wrong" });

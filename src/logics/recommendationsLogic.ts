@@ -1,7 +1,15 @@
 import Playlist from "../models/playlist";
 import Track from "../models/track";
 import { EventRepository } from "../repositories/eventRepository";
+import { TrackRepository } from "../repositories/trackRepository";
+import {
+  SpotifyAudioFeaturesType,
+  SpotifyPlaylistType,
+  SpotifyTopTrackType,
+} from "../types/spotifyTypes";
 import SpotifyLogic from "./spotifyLogic";
+import Event from "../models/event";
+import NodeCache from "node-cache";
 
 export default class RecommendationsLogic {
   private playlist: number[];
@@ -74,20 +82,139 @@ export default class RecommendationsLogic {
   }
 
   public async recommendEvent(
-    apiKey: string
-  ): Promise<Event & { matchScore: number }> {
+    apiKey: string,
+    playlistIds: string[]
+  ): Promise<Array<Event & { matchScore: number }>> {
     const spotifyLogic = new SpotifyLogic();
     const eventRepository = new EventRepository();
+    const eventsSimilarity: Array<Event & { similarity: number[] }> = [];
 
     const events = await eventRepository.getEvents();
 
-    const userPlaylists = await spotifyLogic.getPlaylists(apiKey);
+    let userPlaylists = await spotifyLogic.getPlaylists(apiKey);
 
     if (!userPlaylists) {
       throw new Error("No playlists found");
     }
 
-    return {} as Event & { matchScore: number };
+    userPlaylists = userPlaylists as SpotifyPlaylistType[];
+    const playlistWithTracks: Array<
+      SpotifyPlaylistType & { tracksWithAudioData: Track[] }
+    > = [];
+
+    // const scorePlaylists;
+    for (let playlistKey in userPlaylists.filter(
+      (p) => playlistIds.includes(p.id) || playlistIds.length === 0
+    ) as SpotifyPlaylistType[]) {
+      let playlist = (
+        userPlaylists.filter(
+          (p) => playlistIds.includes(p.id) || playlistIds.length === 0
+        ) as SpotifyPlaylistType[]
+      )[playlistKey];
+      const tracks = (await spotifyLogic.getPlaylistTracks(
+        apiKey,
+        playlist.id
+      )) as SpotifyTopTrackType[];
+      const tracksWithAudioFeatures: Track[] = [];
+      const clonedTracks = Object.assign([], tracks) as SpotifyTopTrackType[];
+      // while (clonedTracks.length > 0) {
+      const tracksChunk = clonedTracks.splice(0, 100);
+      const audioFeatures = await spotifyLogic.getTracksAudioFeatures(
+        apiKey,
+        tracksChunk.map((track) => track.id)
+      );
+
+      if (audioFeatures.length === 0) {
+        continue;
+      }
+
+      tracksWithAudioFeatures.push(
+        ...tracksChunk.map((track, index) => {
+          return new Track(
+            track,
+            audioFeatures
+              .filter((a) => a !== null)
+              .find((audioFeature) => {
+                return audioFeature.id === track.id;
+              }) as SpotifyAudioFeaturesType
+          );
+        })
+      );
+      // }
+
+      playlistWithTracks.push({
+        ...playlist,
+        tracksWithAudioData: tracksWithAudioFeatures,
+      });
+
+      for (let eventKey in events) {
+        const event = events[eventKey];
+        if (event._embedded === undefined) {
+          continue;
+        }
+
+        const eventTracks = event._embedded.tracks;
+        let eventTracksSum = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        let playlistTracksSum = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+        for (let i = 0; i < eventTracks.length; i++) {
+          let featureNumbers = this.convertTrackToValidNumbers(eventTracks[i]);
+          for (let j = 0; j < featureNumbers.length; j++) {
+            eventTracksSum[j] += featureNumbers[j];
+          }
+        }
+
+        for (let i = 0; i < tracksWithAudioFeatures.length; i++) {
+          let featureNumbers = this.convertTrackToValidNumbers(
+            tracksWithAudioFeatures[i]
+          );
+          for (let j = 0; j < featureNumbers.length; j++) {
+            playlistTracksSum[j] += featureNumbers[j];
+          }
+        }
+
+        eventTracksSum = eventTracksSum.map((value) => {
+          return value / eventTracks.length;
+        });
+
+        playlistTracksSum = playlistTracksSum.map((value) => {
+          return value / tracksWithAudioFeatures.length;
+        });
+
+        let similarity = this.cosineSimilarity(
+          eventTracksSum,
+          playlistTracksSum
+        );
+
+        if (Number.isNaN(similarity)) {
+          similarity = 0;
+        }
+
+        if (eventsSimilarity.find((e) => e._id === event._id)) {
+          const eventIndex = eventsSimilarity.findIndex(
+            (e) => e._id === event._id
+          );
+          eventsSimilarity[eventIndex].similarity.push(similarity);
+        } else {
+          eventsSimilarity.push({ ...event, similarity: [similarity] });
+        }
+      }
+    }
+
+    console.log(eventsSimilarity);
+
+    return eventsSimilarity
+      .map((event) => {
+        return {
+          ...event,
+          matchScore:
+            event.similarity.reduce((a, b) => a + b, 0) /
+            event.similarity.length,
+        };
+      })
+      .sort((a, b) => {
+        return b.matchScore - a.matchScore;
+      });
 
     // var similarity: { [key: string]: number } = {};
 

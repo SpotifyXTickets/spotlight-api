@@ -24,15 +24,33 @@ export class Track {
   ) {
     this.spotifyId = spotifyTrackData.id;
     this.name = spotifyTrackData.name;
-    this.accousticness = spotifyAudiaFeaturesData.acousticness;
-    this.danceability = spotifyAudiaFeaturesData.danceability;
-    this.energy = spotifyAudiaFeaturesData.energy;
-    this.instrumentalness = spotifyAudiaFeaturesData.instrumentalness;
-    this.liveness = spotifyAudiaFeaturesData.liveness;
-    this.loudness = spotifyAudiaFeaturesData.loudness;
-    this.speechiness = spotifyAudiaFeaturesData.speechiness;
-    this.tempo = spotifyAudiaFeaturesData.tempo;
-    this.valence = spotifyAudiaFeaturesData.valence;
+    this.accousticness = spotifyAudiaFeaturesData
+      ? spotifyAudiaFeaturesData.acousticness
+      : undefined;
+    this.danceability = spotifyAudiaFeaturesData
+      ? spotifyAudiaFeaturesData.danceability
+      : undefined;
+    this.energy = spotifyAudiaFeaturesData
+      ? spotifyAudiaFeaturesData.energy
+      : undefined;
+    this.instrumentalness = spotifyAudiaFeaturesData
+      ? spotifyAudiaFeaturesData.instrumentalness
+      : undefined;
+    this.liveness = spotifyAudiaFeaturesData
+      ? spotifyAudiaFeaturesData.liveness
+      : undefined;
+    this.loudness = spotifyAudiaFeaturesData
+      ? spotifyAudiaFeaturesData.loudness
+      : undefined;
+    this.speechiness = spotifyAudiaFeaturesData
+      ? spotifyAudiaFeaturesData.speechiness
+      : undefined;
+    this.tempo = spotifyAudiaFeaturesData
+      ? spotifyAudiaFeaturesData.tempo
+      : undefined;
+    this.valence = spotifyAudiaFeaturesData
+      ? spotifyAudiaFeaturesData.valence
+      : undefined;
   }
 }
 export default Track;

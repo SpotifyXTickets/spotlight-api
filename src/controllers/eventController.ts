@@ -1,3 +1,4 @@
+import { EventRepository } from "./../repositories/eventRepository";
 import { Request, Response } from "express";
 import { AppController } from "./appController";
 import TicketMasterLogic from "../logics/ticketMasterLogic";
@@ -15,9 +16,9 @@ export default class EventController extends AppController {
         method: this.getAllEvents,
       },
       {
-        uri: "/:musicGenre",
+        uri: "/:id",
         middlewares: [],
-        method: this.getEventByMusicGenre,
+        method: this.getEventById,
       },
     ]);
   }
@@ -78,5 +79,17 @@ export default class EventController extends AppController {
       return;
     }
     res.send(events);
+  }
+
+  public async getEventById(req: Request, res: Response): Promise<void> {
+    const id = req.params.id;
+    const eventRepository = new EventRepository();
+    const event = await eventRepository.getEventByTicketMasterId(id);
+
+    if (event === false) {
+      res.status(404).send("Not found");
+      return;
+    }
+    res.send(event);
   }
 }

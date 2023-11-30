@@ -69,6 +69,9 @@ const recreateMeanScores = (module.exports.recreateMeanScore =
                   recommendationsLogic.generateMeanScore(tracks);
 
                 artist.meanScore = meanScore;
+                artist._embedded = {
+                  tracks: tracks,
+                };
                 await artistRepository.updateArtist(artist);
                 updatedArtists.push(artist);
               }
@@ -86,9 +89,19 @@ const recreateMeanScores = (module.exports.recreateMeanScore =
               if (Number.isNaN((artistSum / artistScores.length) as number)) {
                 {
                   event.meanScore = 0;
+                  event._embedded = {
+                    tracks: [],
+                  };
                 }
               } else {
                 event.meanScore = artistSum / artistScores.length;
+                event._embedded = {
+                  tracks: artists
+                    .map((artist) => {
+                      return artist._embedded?.tracks;
+                    })
+                    .flat() as Track[],
+                };
               }
               await eventRepository.updateEvent(event);
 
