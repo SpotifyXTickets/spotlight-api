@@ -245,7 +245,9 @@ export default class SpotifyLogic {
     return false;
   }
   // Class properties and methods go here
-  public async getFollowingArtists(apiKey: string): Promise<any[]> {
+  public async getFollowingArtists(
+    apiKey: string
+  ): Promise<SpotifyArtistType[]> {
     await axios
       .get("https://api.spotify.com/v1/me/following?type=artist", {
         headers: {
@@ -253,7 +255,7 @@ export default class SpotifyLogic {
         },
       })
       .then((response) => {
-        return response.data;
+        return response.data.artists as SpotifyArtistType[];
       });
     return [];
   }

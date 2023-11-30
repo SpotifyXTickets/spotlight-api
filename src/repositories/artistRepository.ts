@@ -22,6 +22,15 @@ export class ArtistRepository extends CoreRepository {
     return data as unknown as Artist[];
   }
 
+  public async getArtistBySpotifyId(
+    spotifyId: string
+  ): Promise<Artist | boolean> {
+    const data = await (
+      await this.collection
+    ).findOne({ spotifyId: spotifyId });
+    return data ? (data as unknown as Artist) : false;
+  }
+
   public async createArtist(artist: Artist): Promise<Artist | boolean> {
     try {
       const data = await (await this.collection).insertOne(artist);
