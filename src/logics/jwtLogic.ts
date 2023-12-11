@@ -32,15 +32,15 @@ export default class JwtLogic {
     return new TextEncoder().encode(secret)
   }
   public async getAccessTokensFromJWT(jwtToken: string) {
-    const jwt = await jwtVerify(jwtToken, this.getJWTSecretKey() ?? "");
+    const jwt = await jwtVerify(jwtToken, this.getJWTSecretKey() ?? '')
   }
 
   public async generateJWTToken() {
     const jwt = await new SignJWT({})
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
-      .setExpirationTime("7d")
-      .sign(this.getJWTSecretKey() ?? "");
+      .setExpirationTime('7d')
+      .sign(this.getJWTSecretKey() ?? '')
 
     return jwt
   }

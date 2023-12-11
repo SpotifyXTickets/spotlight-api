@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 
 export default class EventixLogic {
   public RequestAuthorization() {
-    let state = "randomstring";
+    let state = 'randomstring'
 
     axios
       .get('https://auth.openticket.tech/token/authorize', {

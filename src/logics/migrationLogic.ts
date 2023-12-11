@@ -1,1 +1,1 @@
-import { MongoClient } from "mongodb";
+import { MongoClient } from 'mongodb'

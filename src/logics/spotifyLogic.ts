@@ -23,8 +23,8 @@ export default class SpotifyLogic {
         auth.spotify.updatedAt <
         new Date(Date.now() - 1000 * auth.spotify.expiresIn)
       ) {
-        this.RefreshAuthorization(auth.spotify);
-        return true;
+        this.RefreshAuthorization(auth.spotify)
+        return true
       }
       return true
     } else if (auth) {
@@ -147,16 +147,16 @@ export default class SpotifyLogic {
           },
         })
         .then((response) => {
-          res.send(response.data);
+          res.send(response.data)
         })
         .catch((error) => {
-          res.status(400).json({ message: error.message });
-        });
+          res.status(400).json({ message: error.message })
+        })
     }
     res.send('Authorize page')
   }
   public async getPlaylists(req: Request, res: Response) {
-    const auth = this.authenticationRepository.GetSpotifyAuth();
+    const auth = this.authenticationRepository.GetSpotifyAuth()
     if (auth) {
       await axios
         .get('https://api.spotify.com/v1/me/playlists', {

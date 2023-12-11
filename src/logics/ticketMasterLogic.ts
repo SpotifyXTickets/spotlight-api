@@ -162,7 +162,7 @@ export default class TicketMasterLogic {
     size: number,
     keyword?: string,
     startDateTime?: string,
-    endDateTime?: string
+    endDateTime?: string,
   ): Promise<{
     events: TicketMasterEventType[]
     links: TicketMasterEventResponse['_links']
@@ -170,7 +170,7 @@ export default class TicketMasterLogic {
     const genreCap: string = genre.charAt(0).toUpperCase() + genre.slice(1)
     const genres: Record<string, string> = Genres
 
-    let genreId = genres[genreCap];
+    let genreId = genres[genreCap]
 
     const response = await axios
       .get(

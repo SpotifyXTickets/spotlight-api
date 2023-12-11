@@ -1,5 +1,5 @@
-import jwt from "jwt-simple";
-import { MongoClient } from "mongodb";
+import jwt from 'jwt-simple'
+import { MongoClient } from 'mongodb'
 
 export default class AuthenticationRepository {
   private static fakeDatabase: {

@@ -1,4 +1,4 @@
-import { MongoClient } from "mongodb";
+import { MongoClient } from 'mongodb'
 import express, { Application, Request, Response } from 'express'
 import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
@@ -34,24 +34,24 @@ app.use('/', routes)
 const PORT = process.env.NODE_PORT || 8000
 
 app.listen(PORT, async () => {
-  console.log(`Server is running on PORT http://localhost:${PORT}/`);
-  const uri = process.env.MONGODB_URL;
-  console.log(uri);
-  const client = new MongoClient(uri as string);
+  console.log(`Server is running on PORT http://localhost:${PORT}/`)
+  const uri = process.env.MONGODB_URL
+  console.log(uri)
+  const client = new MongoClient(uri as string)
   try {
-    await client.connect();
-    const databasesList = await client.db().admin().listDatabases();
+    await client.connect()
+    const databasesList = await client.db().admin().listDatabases()
 
-    console.log("Databases:");
-    databasesList.databases.forEach((db) => console.log(` - ${db.name}`));
-    await client.db("Citric").collection("Users").insertOne({
-      name: "test",
-      email: "test",
-      password: "test",
-    });
+    console.log('Databases:')
+    databasesList.databases.forEach((db) => console.log(` - ${db.name}`))
+    await client.db('Citric').collection('Users').insertOne({
+      name: 'test',
+      email: 'test',
+      password: 'test',
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
   } finally {
-    await client.close();
+    await client.close()
   }
-});
+})
