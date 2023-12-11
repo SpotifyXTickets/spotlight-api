@@ -31,11 +31,12 @@ export default class RecommendationController extends AppController {
 
     const apiKey = req.headers.authorization!.split(" ")[1];
     const recommendationsLogic = new RecommendationsLogic();
-    const events = (
-      await recommendationsLogic.recommendEvent(apiKey, playlistIds)
-    ).slice(0, 6);
+    const events = await recommendationsLogic.recommendEvent(
+      apiKey,
+      playlistIds
+    );
 
-    res.send();
+    res.send(events.slice(0, 10));
     // var playlist = [
     //   0.633, 0.162, 0.104, 0.475, 0.923, 0.933, 0.252, 0.195, 0.726,
     // ];
