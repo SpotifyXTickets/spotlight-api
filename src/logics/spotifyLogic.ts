@@ -1,6 +1,6 @@
 import { AccessToken } from "./../models/accessToken";
 import { AccessTokenRepository } from "./../repositories/accessTokenRepository";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { Request, Response } from "express";
 import AuthenticationRepository from "../repositories/authenticationRepository";
 import jwt from "jwt-simple";
@@ -14,6 +14,7 @@ import {
   SpotifyTopTrackType,
 } from "../types/spotifyTypes";
 import Track from "../models/track";
+import logger from "../logger";
 
 export default class SpotifyLogic {
   private authenticationRepository: AuthenticationRepository;
@@ -174,13 +175,6 @@ export default class SpotifyLogic {
           };
         }
 
-        // const token = this.authenticationRepository.InsertSpotifyAuth({
-        //   accessToken: response.data.access_token,
-        //   tokenType: response.data.token_type,
-        //   expiresIn: response.data.expires_in,
-        //   refreshToken: response.data.refresh_token,
-        //   scope: this.scope,
-        // });
         const { redirectUrl } =
           this.authenticationRepository.GetSpotifyAuthState("randomstring");
 
@@ -219,18 +213,29 @@ export default class SpotifyLogic {
           },
         })
         .then((response) => {
-          console.log(response.data);
-          return response.data;
+          return { user: response.data };
         })
-        .catch((error) => {
-          console.error(error);
-          return null;
+        .catch((error: AxiosError) => {
+          if (error.response?.status === 403) {
+            logger.warn(
+              "Recieved request from non-whitelisted user and returned statuscode: 403"
+            );
+          }
+          return {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            message: error.response?.data,
+          };
         });
-      if (data) {
-        return data;
-      }
+      return data as
+        | { user: User }
+        | { status: number; statusText: string; message: string };
     }
-    return null;
+    return {
+      status: 401,
+      statusText: "Unauthorized",
+      message: "Unauthorized no accessToken found",
+    };
   }
   public async getPlaylists(
     apiKey: string

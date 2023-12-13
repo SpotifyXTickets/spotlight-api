@@ -100,16 +100,27 @@ export default class HomeController extends AppController {
    *           description: User information.
    */
   public async getUser(req: Request, res: Response): Promise<void> {
+    function isErrorResponse(
+      data: any
+    ): data is { status: number; statusText: string; message: string } {
+      return (
+        typeof data === "object" &&
+        "status" in data &&
+        "statusText" in data &&
+        "message" in data
+      );
+    }
+
     const spotifyLogic = new SpotifyLogic();
     const user = await spotifyLogic.getUser(
       req.headers.authorization!.split(" ")[1]
     );
 
-    if (!user) {
-      res.status(401).json({ error: "Something went wrong" });
+    if (isErrorResponse(user)) {
+      res.status(user.status).json({ error: user.message });
       return;
     }
-    res.status(200).send(user);
+    res.status(200).send(user.user);
   }
 
   /**
