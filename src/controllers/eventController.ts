@@ -62,25 +62,6 @@ export default class EventController extends AppController {
     res.send(classifications)
   }
 
-  public async getEventByMusicGenre(
-    req: Request,
-    res: Response,
-  ): Promise<void> {
-    const genre = req.params.musicGenre
-    const size = req.query.size ?? 20
-    const ticketMasterLogic = new TicketMasterLogic()
-    const events = await ticketMasterLogic.getEventsByGenre(
-      genre,
-      size as unknown as number,
-    )
-
-    if (events === undefined) {
-      res.status(500).send('Error')
-      return
-    }
-    res.send(events)
-  }
-
   public async getEventById(req: Request, res: Response): Promise<void> {
     const id = req.params.id
     const eventRepository = new EventRepository()

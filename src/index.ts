@@ -9,8 +9,6 @@ import swaggerDocs from './docs' // Adjust the path as per our project structure
 import routes from './routes'
 import { DB } from './db/db'
 dotenv.config()
-//Requires the environment variables to be set.
-import logger from './logger'
 
 const app: Application = express()
 

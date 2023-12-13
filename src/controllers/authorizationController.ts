@@ -1,7 +1,6 @@
 import { AppController } from './appController'
-import { Response, Request, NextFunction } from 'express'
+import { Response, Request } from 'express'
 import SpotifyLogic from '../logics/spotifyLogic'
-import logger from '../logger'
 
 export default class AuthorizationController extends AppController {
   constructor() {
@@ -24,7 +23,6 @@ export default class AuthorizationController extends AppController {
       req.query.state as string,
       redirectUrl,
     )
-    const requestOrigin = req.headers.origin
     if (tokenResponse.error !== null) res.status(400).send(tokenResponse.error)
 
     res.status(200).send({

@@ -1,16 +1,16 @@
-import { Event } from "./../models/event";
-import { MongoMemoryServer } from "mongodb-memory-server";
-import { EventRepository } from "./eventRepository";
-import { faker } from "@faker-js/faker";
-import { ObjectId } from "mongodb";
-import { DB } from "../db/db";
+import { Event } from './../models/event'
+import { MongoMemoryServer } from 'mongodb-memory-server'
+import { EventRepository } from './eventRepository'
+import { faker } from '@faker-js/faker'
+import { ObjectId } from 'mongodb'
+import { DB } from '../db/db'
 
-describe("EventRepository", () => {
-  let mongoMemoryServer: MongoMemoryServer;
-  let eventRepository: EventRepository;
+describe('EventRepository', () => {
+  let mongoMemoryServer: MongoMemoryServer
+  let eventRepository: EventRepository
 
   function generateEvent() {
-    const startDate = faker.date.future();
+    const startDate = faker.date.future()
     return {
       _id: new ObjectId(faker.database.mongodbObjectId()),
       ticketMasterId: faker.database.mongodbObjectId(),
@@ -28,21 +28,21 @@ describe("EventRepository", () => {
       locationLat: faker.location.latitude(),
       locationLon: faker.location.longitude(),
       address: faker.location.streetAddress(),
-    } as Event;
+    } as Event
   }
   beforeAll(async () => {
-    mongoMemoryServer = new MongoMemoryServer();
-    await mongoMemoryServer.start();
-    const mongoUri = mongoMemoryServer.getUri();
-    process.env["MONGODB_URL"] = mongoUri;
-    process.env["MONGO_DBNAME"] = "CitricDB";
-    await DB.connect();
+    mongoMemoryServer = new MongoMemoryServer()
+    await mongoMemoryServer.start()
+    const mongoUri = mongoMemoryServer.getUri()
+    process.env['MONGODB_URL'] = mongoUri
+    process.env['MONGO_DBNAME'] = 'CitricDB'
+    await DB.connect()
 
-    eventRepository = new EventRepository();
-  });
+    eventRepository = new EventRepository()
+  })
 
   beforeEach(async () => {
-    const db = await DB.getDB();
+    const db = await DB.getDB()
     if (
       (
         await db
@@ -50,40 +50,40 @@ describe("EventRepository", () => {
           .toArray()
       ).length !== 1
     ) {
-      await db.createCollection(eventRepository.collectionName);
+      await db.createCollection(eventRepository.collectionName)
     }
-  });
+  })
 
   afterEach(async () => {
-    const db = await DB.getDB();
-    await db.dropCollection(eventRepository.collectionName);
-  });
+    const db = await DB.getDB()
+    await db.dropCollection(eventRepository.collectionName)
+  })
 
   afterAll(async () => {
-    const client = await DB.getClient();
-    client.close(true);
-    await mongoMemoryServer.stop();
-  });
+    const client = await DB.getClient()
+    client.close(true)
+    await mongoMemoryServer.stop()
+  })
 
-  describe("getEvents", () => {
-    const events = [] as Event[];
+  describe('getEvents', () => {
+    const events = [] as Event[]
     beforeAll(async () => {
       for (let i = 0; i < 10; i++) {
-        const event = await eventRepository.createEvent(generateEvent());
+        const event = await eventRepository.createEvent(generateEvent())
         if (event) {
-          events.push(event as Event);
+          events.push(event as Event)
         }
       }
-    });
-    it("should return an array of events", async () => {
-      const recievedEvents = await eventRepository.getEvents();
-      expect(recievedEvents.length).toEqual(events.length);
-    });
+    })
+    it('should return an array of events', async () => {
+      const recievedEvents = await eventRepository.getEvents()
+      expect(recievedEvents.length).toEqual(events.length)
+    })
 
-    it("should return an empty array if no events exist", async () => {
-      const expectedEvents: Event[] = [];
-      const events = await eventRepository.getEvents();
-      expect(events).toEqual(expectedEvents);
-    });
-  });
-});
+    it('should return an empty array if no events exist', async () => {
+      const expectedEvents: Event[] = []
+      const events = await eventRepository.getEvents()
+      expect(events).toEqual(expectedEvents)
+    })
+  })
+})

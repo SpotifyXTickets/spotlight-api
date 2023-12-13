@@ -1,19 +1,15 @@
 import { AccessToken } from './../models/accessToken'
 import { AccessTokenRepository } from './../repositories/accessTokenRepository'
-import axios, { AxiosError, AxiosResponse } from 'axios'
+import axios, { AxiosError } from 'axios'
 import { Request, Response } from 'express'
 import AuthenticationRepository from '../repositories/authenticationRepository'
-import jwt from 'jwt-simple'
 import { User } from '../models/user'
-import { ObjectId } from 'bson'
-import { Artist } from '../models/artist'
 import {
   SpotifyArtistType,
   SpotifyAudioFeaturesType,
   SpotifyPlaylistType,
   SpotifyTopTrackType,
 } from '../types/spotifyTypes'
-import Track from '../models/track'
 import logger from '../logger'
 
 export default class SpotifyLogic {
@@ -175,9 +171,6 @@ export default class SpotifyLogic {
           }
         }
 
-        const { redirectUrl } =
-          this.authenticationRepository.GetSpotifyAuthState('randomstring')
-
         return {
           accessToken: token as string,
           expiresIn: response.data.expires_in as number,
@@ -270,9 +263,9 @@ export default class SpotifyLogic {
           },
         })
         .then((response) => {
-          const items = response.data.items as any[]
+          const items = response.data.items as { track: SpotifyTopTrackType }[]
           return items.map((item) => {
-            return item.track as SpotifyTopTrackType
+            return item.track
           })
         })
         .catch((error) => {

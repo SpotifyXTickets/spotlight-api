@@ -101,8 +101,11 @@ export default class HomeController extends AppController {
    */
   public async getUser(req: Request, res: Response): Promise<void> {
     function isErrorResponse(
-      data: any,
+      data: unknown,
     ): data is { status: number; statusText: string; message: string } {
+      if (data === null || data === undefined) {
+        return false
+      }
       return (
         typeof data === 'object' &&
         'status' in data &&
