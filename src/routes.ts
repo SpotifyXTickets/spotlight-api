@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { NextFunction, Router, Request, Response } from 'express'
 import AuthController from './controllers/authorizationController'
 import asyncify from 'express-asyncify'
 import HomeController from './controllers/homeController'
@@ -6,40 +6,68 @@ import EventController from './controllers/eventController'
 import RecommendationController from './controllers/recommendationController'
 import swaggerUi from 'swagger-ui-express' // Import Swagger UI package
 import swaggerJsdoc from 'swagger-jsdoc'
+import SettingController from './controllers/settingController'
+import UserController from './controllers/userController'
+import PlaylistController from './controllers/playlistController'
+
+function setRouterRoutes(
+  router: Router,
+  baseUri: string = '',
+  routes: {
+    uri: string
+    HttpMethod?: string
+    middlewares?: Array<
+      (req: Request, res: Response, next: NextFunction) => void
+    >
+    method: (req: Request, res: Response) => void
+  }[],
+): void {
+  routes.forEach((route) => {
+    switch (route.HttpMethod ? route.HttpMethod.toUpperCase() : undefined) {
+      case 'GET':
+        router.get(baseUri + route.uri, route.middlewares ?? [], route.method)
+        break
+      case 'POST':
+        router.post(baseUri + route.uri, route.middlewares ?? [], route.method)
+        break
+      case 'PUT':
+        router.put(baseUri + route.uri, route.middlewares ?? [], route.method)
+        break
+      case 'DELETE':
+        router.delete(
+          baseUri + route.uri,
+          route.middlewares ?? [],
+          route.method,
+        )
+        break
+      default:
+        router.get(baseUri + route.uri, route.middlewares ?? [], route.method)
+        break
+    }
+  })
+}
 
 const router = asyncify(express.Router())
-
 const authController = new AuthController()
-const authRoutes = authController.getRoutes()
-
-authRoutes.forEach((route) => {
-  router.get('/authorize' + route.uri, route.middlewares ?? [], route.method)
-})
+setRouterRoutes(router, '/authorize', authController.getRoutes())
 
 const homeController = new HomeController()
-const homeRoutes = homeController.getRoutes()
-
-homeRoutes.forEach((route) => {
-  router.get(route.uri, route.middlewares ?? [], route.method)
-})
+setRouterRoutes(router, '', homeController.getRoutes())
 
 const eventController = new EventController()
-const eventRoutes = eventController.getRoutes()
-
-eventRoutes.forEach((route) => {
-  router.get('/events' + route.uri, route.middlewares ?? [], route.method)
-})
+setRouterRoutes(router, '/event', eventController.getRoutes())
 
 const recommendationController = new RecommendationController()
-const recommendationRoutes = recommendationController.getRoutes()
+setRouterRoutes(router, '/recommendation', recommendationController.getRoutes())
 
-recommendationRoutes.forEach((route) => {
-  router.get(
-    '/recommendations' + route.uri,
-    route.middlewares ?? [],
-    route.method,
-  )
-})
+const settingController = new SettingController()
+setRouterRoutes(router, '/setting', settingController.getRoutes())
+
+const userController = new UserController()
+setRouterRoutes(router, '/user', userController.getRoutes())
+
+const playListController = new PlaylistController()
+setRouterRoutes(router, '/playlist', playListController.getRoutes())
 
 // Swagger options specifying API metadata and server details
 const swaggerOptions: swaggerJsdoc.Options = {

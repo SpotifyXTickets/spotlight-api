@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import AuthenticationLogic from '../logics/authenticationLogic'
+import AuthenticationLogic from '../logics/authorizationLogic'
 
 export const Authenticated = async (
   req: Request,

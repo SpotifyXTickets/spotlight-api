@@ -1,42 +1,42 @@
-import { Request, Response } from "express";
-import { AppController } from "./appController";
-import RecommendationsLogic from "../logics/recommendationsLogic";
-import { Authenticated } from "../middlewares/authenticationMiddleware";
+import { Request, Response } from 'express'
+import { AppController } from './appController'
+import RecommendationsLogic from '../logics/recommendationsLogic'
+import { Authenticated } from '../middlewares/authenticationMiddleware'
 
 export default class RecommendationController extends AppController {
   constructor() {
-    super();
+    super()
 
     this.setRoutes([
       {
-        uri: "/",
+        uri: '/',
         middlewares: [Authenticated],
         method: this.recommendEvent,
       },
-    ]);
+    ])
   }
 
   public async recommendEvent(req: Request, res: Response): Promise<void> {
     if (req.headers.authorization === undefined) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
+      res.status(401).json({ error: 'Unauthorized' })
+      return
     }
 
     const playlistIds = req.query.playlistIds
-      ? ((req.query.playlistIds as string).split(",") as string[])
-      : [];
+      ? ((req.query.playlistIds as string).split(',') as string[])
+      : []
     // Test data
     // Data order should be [Danceability, Energy, Loudness, Speechiness, Acousticness, Instrumentalness, Liveness, Valence, Tempo]
     // All data should be scaled down to a value between 0 and 1
 
-    const apiKey = req.headers.authorization!.split(" ")[1];
-    const recommendationsLogic = new RecommendationsLogic();
+    const apiKey = req.headers.authorization!.split(' ')[1]
+    const recommendationsLogic = new RecommendationsLogic()
     const events = await recommendationsLogic.recommendEvent(
       apiKey,
-      playlistIds
-    );
+      playlistIds,
+    )
 
-    res.send(events.slice(0, 10));
+    res.send(events.slice(0, 10))
     // var playlist = [
     //   0.633, 0.162, 0.104, 0.475, 0.923, 0.933, 0.252, 0.195, 0.726,
     // ];
@@ -57,4 +57,4 @@ export default class RecommendationController extends AppController {
   }
 }
 
-module.exports = RecommendationController;
+module.exports = RecommendationController

@@ -1,0 +1,35 @@
+import SpotifyLogic from './spotifyLogic'
+import { Response, Request } from 'express'
+
+export default class AuthorizationLogic {
+  private spotifyLogic: SpotifyLogic
+
+  constructor() {
+    this.spotifyLogic = new SpotifyLogic()
+  }
+
+  public async AuthorizeSpotify(
+    req: Request,
+    res: Response,
+    redirectUrl?: string,
+  ) {
+    await this.spotifyLogic.RequestAuthorization(req, res, redirectUrl)
+  }
+
+  public async CheckAuthorization(apiKey?: string): Promise<string | boolean> {
+    if (!apiKey) {
+      return false
+    }
+    return this.spotifyLogic.checkAuthorization(apiKey)
+  }
+
+  public async RequestAccessToken(
+    code: string,
+    state: string,
+    redirectUrl?: string,
+  ): Promise<{ accessToken: string; error?: string }> {
+    return await this.spotifyLogic.RequestAccessToken(code, state, redirectUrl)
+  }
+}
+
+module.exports = AuthorizationLogic
