@@ -1,9 +1,9 @@
 import express from 'express'
 import AuthController from './controllers/authorizationController'
-import path from 'path'
 import asyncify from 'express-asyncify'
 import HomeController from './controllers/homeController'
 import EventController from './controllers/eventController'
+import RecommendationController from './controllers/recommendationController'
 import swaggerUi from 'swagger-ui-express' // Import Swagger UI package
 import swaggerJsdoc from 'swagger-jsdoc'
 
@@ -28,6 +28,17 @@ const eventRoutes = eventController.getRoutes()
 
 eventRoutes.forEach((route) => {
   router.get('/events' + route.uri, route.middlewares ?? [], route.method)
+})
+
+const recommendationController = new RecommendationController()
+const recommendationRoutes = recommendationController.getRoutes()
+
+recommendationRoutes.forEach((route) => {
+  router.get(
+    '/recommendations' + route.uri,
+    route.middlewares ?? [],
+    route.method,
+  )
 })
 
 // Swagger options specifying API metadata and server details

@@ -13,13 +13,13 @@ export default class AuthenticationLogic {
     await spotifyLogic.RequestAuthorization(req, res)
   }
 
-  public CheckAuthorization(req: Request, res: Response) {
-    const authorization = req.headers.authorization
-    if (authorization === undefined) {
+  public async CheckAuthorization(apiKey?: string): Promise<string | boolean> {
+    if (!apiKey) {
       return false
     }
+
     const spotifyLogic = new SpotifyLogic()
-    return spotifyLogic.checkAuthorization(authorization.split(' ')[1])
+    return spotifyLogic.checkAuthorization(apiKey)
   }
 }
 

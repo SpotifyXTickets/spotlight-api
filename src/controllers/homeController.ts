@@ -79,7 +79,10 @@ export default class HomeController extends AppController {
    */
   public async getArtists(req: Request, res: Response): Promise<void> {
     const spotifyLogic = new SpotifyLogic()
-    await spotifyLogic.getArtists(req, res)
+    const artists = await spotifyLogic.getFollowingArtists(
+      req.headers.authorization!.split(' ')[1],
+    )
+    res.status(200).send(artists)
   }
 
   /**
@@ -97,8 +100,27 @@ export default class HomeController extends AppController {
    *           description: User information.
    */
   public async getUser(req: Request, res: Response): Promise<void> {
+    function isErrorResponse(
+      data: any,
+    ): data is { status: number; statusText: string; message: string } {
+      return (
+        typeof data === 'object' &&
+        'status' in data &&
+        'statusText' in data &&
+        'message' in data
+      )
+    }
+
     const spotifyLogic = new SpotifyLogic()
-    await spotifyLogic.getUser(req, res)
+    const user = await spotifyLogic.getUser(
+      req.headers.authorization!.split(' ')[1],
+    )
+
+    if (isErrorResponse(user)) {
+      res.status(user.status).json({ error: user.message })
+      return
+    }
+    res.status(200).send(user.user)
   }
 
   /**
@@ -117,7 +139,8 @@ export default class HomeController extends AppController {
    */
   public async authorize(req: Request, res: Response): Promise<void> {
     const spotifyLogic = new SpotifyLogic()
-    spotifyLogic.RequestAuthorization(req, res)
+    const redirectUrl = req.headers.referer ? req.headers.referer : undefined
+    await spotifyLogic.RequestAuthorization(req, res, redirectUrl)
   }
 
   /**
@@ -136,7 +159,17 @@ export default class HomeController extends AppController {
    */
   public async getPlaylists(req: Request, res: Response): Promise<void> {
     const spotifyLogic = new SpotifyLogic()
-    await spotifyLogic.getPlaylists(req, res)
+    if (req.headers.authorization === undefined) {
+      res.status(401).json({ error: 'Unauthorized' })
+      return
+    }
+    const data = await spotifyLogic.getPlaylists(
+      req.headers.authorization!.split(' ')[1],
+    )
+
+    data
+      ? res.status(200).json(data)
+      : res.status(400).json({ error: 'Something went wrong' })
   }
 }
 

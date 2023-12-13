@@ -7,14 +7,30 @@ import cors from 'cors'
 import swaggerUi from 'swagger-ui-express'
 import swaggerDocs from './docs' // Adjust the path as per our project structure
 import routes from './routes'
+import { DB } from './db/db'
 dotenv.config()
+//Requires the environment variables to be set.
+import logger from './logger'
 
 const app: Application = express()
 
 app.use(bodyParser.json())
+const allowList: string[] = []
+if (process.env.FRONTEND_ORIGIN) {
+  allowList.push(
+    process.env.FRONTEND_ORIGIN.lastIndexOf('/') ===
+      process.env.FRONTEND_ORIGIN.length - 1
+      ? process.env.FRONTEND_ORIGIN.slice(0, -1)
+      : process.env.FRONTEND_ORIGIN,
+  )
+}
+if (process.env.FRONTEND_ORIGIN !== 'http://localhost:3000/') {
+  allowList.push('http://localhost:3000')
+}
+console.log(allowList)
 app.use(
   cors({
-    origin: `${process.env.FRONTEND_ORIGIN || 'http://localhost:3000'}`,
+    origin: allowList,
   }),
 )
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -32,6 +48,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 app.use('/', routes)
 
 const PORT = process.env.NODE_PORT || 8000
+DB.connect()
 
 app.listen(PORT, async () => {
   console.log(`Server is running on PORT http://localhost:${PORT}/`)

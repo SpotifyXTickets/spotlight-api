@@ -1,3 +1,4 @@
+import { EventRepository } from './../repositories/eventRepository'
 import { Request, Response } from 'express'
 import { AppController } from './appController'
 import TicketMasterLogic from '../logics/ticketMasterLogic'
@@ -10,14 +11,14 @@ export default class EventController extends AppController {
     this.ticketMasterLogic = new TicketMasterLogic()
     this.setRoutes([
       {
-        uri: '/events',
+        uri: '/',
         middlewares: [],
         method: this.getAllEvents,
       },
       {
-        uri: '/:musicGenre',
+        uri: '/:id',
         middlewares: [],
-        method: this.getEventByMusicGenre,
+        method: this.getEventById,
       },
     ])
   }
@@ -39,8 +40,10 @@ export default class EventController extends AppController {
    *                 $ref: '#/components/schemas/Event'  // Reference to Event schema (define this in Swagger options)
    */
   public async getAllEvents(req: Request, res: Response): Promise<void> {
-    const events = await this.ticketMasterLogic.getAllEvents()
+    const ticketMasterLogic = new TicketMasterLogic()
+    const events = await ticketMasterLogic.getAllEvents()
 
+    console.log(events)
     if (events === undefined) {
       res.status(500).send('Error')
       return
@@ -76,5 +79,17 @@ export default class EventController extends AppController {
       return
     }
     res.send(events)
+  }
+
+  public async getEventById(req: Request, res: Response): Promise<void> {
+    const id = req.params.id
+    const eventRepository = new EventRepository()
+    const event = await eventRepository.getEventByTicketMasterId(id)
+
+    if (event === false) {
+      res.status(404).send('Not found')
+      return
+    }
+    res.send(event)
   }
 }
