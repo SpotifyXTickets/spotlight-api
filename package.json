@@ -22,12 +22,15 @@
     "crypto": "^1.0.1",
     "dotenv": "^16.3.1",
     "express-asyncify": "^2.1.2",
+    "faker": "^5.5.3",
     "jose": "^5.0.1",
     "jwt-simple": "^0.5.6",
     "mongodb": "^6.3.0",
     "node-cache": "^5.1.2",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "winston": "^3.11.0",
+    "winston-mongodb": "^5.1.1"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.3.1",

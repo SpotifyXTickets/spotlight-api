@@ -128,7 +128,8 @@ export default class HomeController extends AppController {
    */
   public async authorize(req: Request, res: Response): Promise<void> {
     const spotifyLogic = new SpotifyLogic();
-    await spotifyLogic.RequestAuthorization(req, res);
+    const redirectUrl = req.headers.referer ? req.headers.referer : undefined;
+    await spotifyLogic.RequestAuthorization(req, res, redirectUrl);
   }
 
   /**

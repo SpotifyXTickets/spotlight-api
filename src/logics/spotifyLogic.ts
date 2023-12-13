@@ -20,7 +20,7 @@ export default class SpotifyLogic {
   private apiHost: string;
   constructor() {
     this.authenticationRepository = new AuthenticationRepository();
-    this.apiHost = process.env.FRONTEND_ORIGIN || "http://localhost:3000";
+    this.apiHost = process.env.FRONTEND_ORIGIN || "http://localhost:3000/";
   }
   public async checkAuthorization(
     accessToken: string
@@ -105,7 +105,7 @@ export default class SpotifyLogic {
           response_type: "code",
           client_id: process.env.SPOTIFY_CLIENT_ID || "",
           scope,
-          redirect_uri: redirectUri ?? `${this.apiHost}/spotify_authorizer`,
+          redirect_uri: `${redirectUri ?? this.apiHost}spotify_authorizer`,
           state: "randomstring",
         }).toString()
     );
@@ -127,7 +127,7 @@ export default class SpotifyLogic {
         "https://accounts.spotify.com/api/token",
         new URLSearchParams({
           grant_type: "authorization_code",
-          redirect_uri: redirectUri ?? `${this.apiHost}/spotify_authorizer`,
+          redirect_uri: `${redirectUri ?? this.apiHost}spotify_authorizer`,
           code,
           client_id: process.env.SPOTIFY_CLIENT_ID || "",
           client_secret: process.env.SPOTIFY_CLIENT_SECRET || "",
