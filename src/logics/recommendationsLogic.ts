@@ -1,7 +1,5 @@
-import Playlist from "../models/playlist";
 import Track from "../models/track";
 import { EventRepository } from "../repositories/eventRepository";
-import { TrackRepository } from "../repositories/trackRepository";
 import {
   SpotifyAudioFeaturesType,
   SpotifyPlaylistType,
@@ -9,7 +7,6 @@ import {
 } from "../types/spotifyTypes";
 import SpotifyLogic from "./spotifyLogic";
 import Event from "../models/event";
-import NodeCache from "node-cache";
 
 export default class RecommendationsLogic {
   private playlist: number[];
@@ -215,14 +212,5 @@ export default class RecommendationsLogic {
       .sort((a, b) => {
         return b.matchScore - a.matchScore;
       });
-
-    // var similarity: { [key: string]: number } = {};
-
-    // for (let key in this.events) {
-    //   similarity[key] = this.cosineSimilarity(this.playlist, this.events[key]);
-    // }
-
-    // console.log(similarity);
-    // return similarity;
   }
 }
