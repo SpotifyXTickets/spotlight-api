@@ -1,57 +1,56 @@
-import { ObjectId } from "mongodb";
-import Event from "../models/event";
-import CoreRepository from "./coreRepository";
+import Event from '../models/event'
+import CoreRepository from './coreRepository'
 
 export class EventRepository extends CoreRepository {
   constructor() {
     super(
-      "events",
-      ["ticketMasterId"],
+      'events',
+      ['ticketMasterId'],
       [
         {
-          name: "artistEvents",
-          foreignTable: "artists",
-          primaryKey: "ticketMasterId",
-          foreignKey: "ticketMasterId",
+          name: 'artistEvents',
+          foreignTable: 'artists',
+          primaryKey: 'ticketMasterId',
+          foreignKey: 'ticketMasterId',
         },
-      ]
-    );
+      ],
+    )
   }
 
   public async linkEventToArtist(
     event: Event,
-    artistId: string | number
+    artistId: string | number,
   ): Promise<void> {
     await this.insertIntoRelationTable(
-      "artistEvents",
+      'artistEvents',
       artistId,
-      event.ticketMasterId
-    );
+      event.ticketMasterId,
+    )
   }
 
   public async getEvents(): Promise<Event[]> {
-    const data = await (await this.collection).find({}).toArray();
-    return data as unknown as Event[];
+    const data = await (await this.collection).find({}).toArray()
+    return data as unknown as Event[]
   }
 
   public async createEvent(event: Event): Promise<Event | boolean> {
-    const data = await (await this.collection).insertOne(event);
-    return data.acknowledged ? event : false;
+    const data = await (await this.collection).insertOne(event)
+    return data.acknowledged ? event : false
   }
 
   public async getEventByTicketMasterId(
-    ticketMasterId: string
+    ticketMasterId: string,
   ): Promise<Event | boolean> {
     const data = await (
       await this.collection
-    ).findOne({ ticketMasterId: ticketMasterId });
-    return data ? (data as unknown as Event) : false;
+    ).findOne({ ticketMasterId: ticketMasterId })
+    return data ? (data as unknown as Event) : false
   }
 
   public async updateEvent(event: Event): Promise<boolean | Event> {
     const data = await (
       await this.collection
-    ).updateOne({ _id: event._id }, { $set: event });
-    return data.acknowledged ? event : false;
+    ).updateOne({ _id: event._id }, { $set: event })
+    return data.acknowledged ? event : false
   }
 }

@@ -1,56 +1,56 @@
-import { ObjectId } from "bson";
+import { ObjectId } from 'bson'
 import {
   SpotifyAudioFeaturesType,
   SpotifyTopTrackType,
-} from "../types/spotifyTypes";
+} from '../types/spotifyTypes'
 
 export class Track {
-  _id?: ObjectId; // will be the same as the trackId from spotify.
-  spotifyId: string;
-  name: string;
-  accousticness?: number;
-  danceability?: number;
-  energy?: number;
-  instrumentalness?: number;
-  liveness?: number;
-  loudness?: number;
-  speechiness?: number;
-  tempo?: number;
-  valence?: number;
+  _id?: ObjectId // will be the same as the trackId from spotify.
+  spotifyId: string
+  name: string
+  accousticness?: number
+  danceability?: number
+  energy?: number
+  instrumentalness?: number
+  liveness?: number
+  loudness?: number
+  speechiness?: number
+  tempo?: number
+  valence?: number
 
   constructor(
     spotifyTrackData: SpotifyTopTrackType,
-    spotifyAudiaFeaturesData: SpotifyAudioFeaturesType
+    spotifyAudiaFeaturesData: SpotifyAudioFeaturesType,
   ) {
-    this.spotifyId = spotifyTrackData.id;
-    this.name = spotifyTrackData.name;
+    this.spotifyId = spotifyTrackData.id
+    this.name = spotifyTrackData.name
     this.accousticness = spotifyAudiaFeaturesData
       ? spotifyAudiaFeaturesData.acousticness
-      : undefined;
+      : undefined
     this.danceability = spotifyAudiaFeaturesData
       ? spotifyAudiaFeaturesData.danceability
-      : undefined;
+      : undefined
     this.energy = spotifyAudiaFeaturesData
       ? spotifyAudiaFeaturesData.energy
-      : undefined;
+      : undefined
     this.instrumentalness = spotifyAudiaFeaturesData
       ? spotifyAudiaFeaturesData.instrumentalness
-      : undefined;
+      : undefined
     this.liveness = spotifyAudiaFeaturesData
       ? spotifyAudiaFeaturesData.liveness
-      : undefined;
+      : undefined
     this.loudness = spotifyAudiaFeaturesData
       ? spotifyAudiaFeaturesData.loudness
-      : undefined;
+      : undefined
     this.speechiness = spotifyAudiaFeaturesData
       ? spotifyAudiaFeaturesData.speechiness
-      : undefined;
+      : undefined
     this.tempo = spotifyAudiaFeaturesData
       ? spotifyAudiaFeaturesData.tempo
-      : undefined;
+      : undefined
     this.valence = spotifyAudiaFeaturesData
       ? spotifyAudiaFeaturesData.valence
-      : undefined;
+      : undefined
   }
 }
-export default Track;
+export default Track

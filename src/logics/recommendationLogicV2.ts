@@ -1,3 +1,6 @@
+// TO-DO integrate minmax scaling
+// TO-DO Check if cosine math is correct. Means might be averages.
+
 import Track from '../models/track'
 import { EventRepository } from '../repositories/eventRepository'
 import {

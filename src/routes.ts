@@ -4,8 +4,9 @@ import asyncify from 'express-asyncify'
 import HomeController from './controllers/homeController'
 import EventController from './controllers/eventController'
 import RecommendationController from './controllers/recommendationController'
+import RecommendationControllerV2 from './controllers/recommendationControllerV2'
 import swaggerUi from 'swagger-ui-express' // Import Swagger UI package
-import swaggerJsdoc from 'swagger-jsdoc'
+import swaggerJsdoc from 'swagger-jsdoc' // Import Swagger JS Doc package
 
 const router = asyncify(express.Router())
 
@@ -36,6 +37,17 @@ const recommendationRoutes = recommendationController.getRoutes()
 recommendationRoutes.forEach((route) => {
   router.get(
     '/recommendations' + route.uri,
+    route.middlewares ?? [],
+    route.method,
+  )
+})
+
+const recommendationControllerV2 = new RecommendationControllerV2()
+const recommendationV2Routes = recommendationControllerV2.getRoutes()
+
+recommendationV2Routes.forEach((route) => {
+  router.get(
+    '/recommendationsv2' + route.uri,
     route.middlewares ?? [],
     route.method,
   )
