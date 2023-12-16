@@ -2,12 +2,13 @@
 import { TrackRepository } from './../repositories/trackRepository'
 import { EventRepository } from './../repositories/eventRepository'
 import { ArtistRepository } from './../repositories/artistRepository'
-import RecommendationsLogic from '../logics/recommendationsLogic'
+import RecommendationsLogic from '../logics/recommendationLogicV2'
 import dotenv from 'dotenv'
 import { DB } from '../db/db'
 import Artist from '../models/artist'
 import Track from '../models/track'
 
+// This file is meant to be run to refresh the meanscores of events.
 dotenv.config()
 DB.connect()
 console.log('Connected to DB')

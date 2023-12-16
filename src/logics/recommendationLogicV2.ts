@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // TO-DO integrate minmax scaling
 // TO-DO Check if cosine math is correct. Means might be averages.
 
@@ -12,6 +13,155 @@ import SpotifyLogic from './spotifyLogic'
 import Event from '../models/event'
 
 export default class RecommendationsLogic {
+  // Define empty data variables
+  events: Event[] = []
+  eventsSimilarity: Array<Event & { similarity: number[] }> = []
+  userPlaylists: SpotifyPlaylistType[] = []
+  playlistWithTracks: Array<
+    SpotifyPlaylistType & { tracksWithAudioData: Track[] }
+  > = []
+  artistPlaylistIds: string[] = []
+  artistPlaylistNames: { [key: string]: number } = {}
+  tracks: SpotifyTopTrackType[] = []
+  tracksWithAudioFeatures: Track[] = []
+
+  public async fetchData(apiKey: string, playlistIds: string[]) {
+    const spotifyLogic = new SpotifyLogic()
+    const eventRepository = new EventRepository()
+
+    this.events = await eventRepository.getEvents()
+    const playlists = await spotifyLogic.getPlaylists(apiKey)
+    if (!Array.isArray(playlists)) {
+      throw new Error('No playlists found')
+    }
+    this.userPlaylists = playlists
+
+    for (const playlistKey in this.userPlaylists.filter(
+      (p) => playlistIds.includes(p.id) || playlistIds.length === 0,
+    ) as SpotifyPlaylistType[]) {
+      // Get the playlist from the userPlaylists array.
+      const playlist = (
+        this.userPlaylists.filter(
+          (p) => playlistIds.includes(p.id) || playlistIds.length === 0,
+        ) as SpotifyPlaylistType[]
+      )[playlistKey]
+
+      // Fetch the tracks from the playlist.
+      this.tracks = (await spotifyLogic.getPlaylistTracks(
+        apiKey,
+        playlist.id,
+      )) as SpotifyTopTrackType[]
+
+      // Clone the tracks array.
+      const clonedTracks = Object.assign(
+        [],
+        this.tracks,
+      ) as SpotifyTopTrackType[]
+      // TO-DO: Ask Stijn if this limits the data to 100 tracks
+      const tracksChunk = clonedTracks.splice(0, 100)
+
+      for (let i = 0; i < tracksChunk.length; i++) {
+        for (let j = 0; j < tracksChunk[i].artists.length; j++) {
+          this.artistPlaylistIds.push(tracksChunk[i].artists[j].id)
+
+          const artistName = tracksChunk[i].artists[j].name.toString() // Convert artist name to string
+          this.artistPlaylistNames[artistName] =
+            this.artistPlaylistNames[artistName] + 1 || 1
+        }
+      }
+
+      // Fetch the audio features from the tracks.
+      const audioFeatures = await spotifyLogic.getTracksAudioFeatures(
+        apiKey,
+        tracksChunk.map((track) => track.id),
+      )
+
+      if (audioFeatures.length === 0) {
+        continue
+      }
+
+      // Loop through each track and add it to the tracksWithAudioFeatures array.
+      this.tracksWithAudioFeatures.push(
+        ...tracksChunk.map((track) => {
+          return new Track(
+            track,
+            audioFeatures
+              .filter((a) => a !== null)
+              .find((audioFeature) => {
+                return audioFeature.id === track.id
+              }) as SpotifyAudioFeaturesType,
+          )
+        }),
+      )
+
+      this.playlistWithTracks.push({
+        ...playlist,
+        tracksWithAudioData: this.tracksWithAudioFeatures,
+      })
+
+      for (const eventKey in this.events) {
+        const event = this.events[eventKey]
+
+        if (event._embedded === undefined) {
+          continue
+        }
+
+        const eventTracks = event._embedded.tracks
+        let eventTracksSum = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+        let playlistTracksSum = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+        // Loop through each track in the event tracks and add it to the eventTracksSum array.
+        for (let i = 0; i < eventTracks.length; i++) {
+          const featureNumbers = this.convertTrackToValidNumbers(eventTracks[i])
+          for (let j = 0; j < featureNumbers.length; j++) {
+            eventTracksSum[j] += featureNumbers[j]
+          }
+        }
+
+        // Loop through each track in the playlist tracks and add it to the playlistTracksSum array.
+        for (let i = 0; i < this.tracksWithAudioFeatures.length; i++) {
+          const featureNumbers = this.convertTrackToValidNumbers(
+            this.tracksWithAudioFeatures[i],
+          )
+          for (let j = 0; j < featureNumbers.length; j++) {
+            playlistTracksSum[j] += featureNumbers[j]
+          }
+        }
+
+        // Calculate the average of the eventTracksSum and playlistTracksSum arrays.
+        eventTracksSum = eventTracksSum.map((value) => {
+          return value / eventTracks.length
+        })
+
+        playlistTracksSum = playlistTracksSum.map((value) => {
+          return value / this.tracksWithAudioFeatures.length
+        })
+
+        // Calculate the similarity between the eventTracksSum and playlistTracksSum arrays.
+        let similarity = this.cosineSimilarity(
+          eventTracksSum,
+          playlistTracksSum,
+        )
+
+        // If the similarity is not a number, set it to 0.
+        if (Number.isNaN(similarity)) {
+          similarity = 0
+        }
+
+        // If the event is already in the eventsSimilarity array, add the similarity to its similarity array
+        if (this.eventsSimilarity.find((e) => e._id === event._id)) {
+          const eventIndex = this.eventsSimilarity.findIndex(
+            (e) => e._id === event._id,
+          )
+          this.eventsSimilarity[eventIndex].similarity.push(similarity)
+        } else {
+          // If the event is not in the eventsSimilarity array, add it with its similarity
+          this.eventsSimilarity.push({ ...event, similarity: [similarity] })
+        }
+      }
+    }
+  }
+
   public generateMeanScore(tracks: Track[]): number {
     // For each track, convert its features to valid numbers
     const scores = tracks.map((track) => {
@@ -79,155 +229,29 @@ export default class RecommendationsLogic {
     return sumAiBi / Math.sqrt(sumAiAi * sumBiBi)
   }
 
+  private sortObject(unsortedObject: { [key: string]: number }) {
+    // Convert the object into an array of tuples.
+    const entries = Object.entries(unsortedObject)
+
+    // Sort the array by the second element of each tuple (the count).
+    entries.sort((a, b) => b[1] - a[1])
+
+    // If you want to convert it back into an object:
+    const sortedObject = Object.fromEntries(entries)
+    return sortedObject
+  }
+
+  public async recommendEventLayerOne() {
+    this.sortObject(this.artistPlaylistNames)
+  }
+
   public async recommendEvent(
     apiKey: string,
     playlistIds: string[],
   ): Promise<Array<Event & { matchScore: number }>> {
-    const spotifyLogic = new SpotifyLogic()
-    const eventRepository = new EventRepository()
+    await this.fetchData(apiKey, playlistIds)
 
-    // Initialize an array to store the similarity between each event and the playlists.
-    const eventsSimilarity: Array<Event & { similarity: number[] }> = []
-
-    // Fetch all events from the EventRepository
-    const events = await eventRepository.getEvents()
-
-    // Fetch the user's playlists from Spotify using the provided API key
-    let userPlaylists = await spotifyLogic.getPlaylists(apiKey)
-
-    // If no playlists were found, throw an error.
-    if (!userPlaylists) {
-      throw new Error('No playlists found')
-    }
-
-    // Cast the userPlaylists to SpotifyPlaylistType.
-    userPlaylists = userPlaylists as SpotifyPlaylistType[]
-
-    // Initialize an array to store the playlists with their tracks.
-    const playlistWithTracks: Array<
-      SpotifyPlaylistType & { tracksWithAudioData: Track[] }
-    > = []
-
-    // Loop through each playlist and fetch its tracks and audio features.
-    for (const playlistKey in userPlaylists.filter(
-      (p) => playlistIds.includes(p.id) || playlistIds.length === 0,
-    ) as SpotifyPlaylistType[]) {
-      // Get the playlist from the userPlaylists array.
-      const playlist = (
-        userPlaylists.filter(
-          (p) => playlistIds.includes(p.id) || playlistIds.length === 0,
-        ) as SpotifyPlaylistType[]
-      )[playlistKey]
-
-      // Fetch the tracks from the playlist.
-      const tracks = (await spotifyLogic.getPlaylistTracks(
-        apiKey,
-        playlist.id,
-      )) as SpotifyTopTrackType[]
-
-      // Initialize an array to store the tracks with their audio features.
-      const tracksWithAudioFeatures: Track[] = []
-
-      // Clone the tracks array.
-      const clonedTracks = Object.assign([], tracks) as SpotifyTopTrackType[]
-      const tracksChunk = clonedTracks.splice(0, 100)
-
-      // Fetch the audio features from the tracks.
-      const audioFeatures = await spotifyLogic.getTracksAudioFeatures(
-        apiKey,
-        tracksChunk.map((track) => track.id),
-      )
-
-      if (audioFeatures.length === 0) {
-        continue
-      }
-
-      // Loop through each track and add it to the tracksWithAudioFeatures array.
-      tracksWithAudioFeatures.push(
-        ...tracksChunk.map((track) => {
-          return new Track(
-            track,
-            audioFeatures
-              .filter((a) => a !== null)
-              .find((audioFeature) => {
-                return audioFeature.id === track.id
-              }) as SpotifyAudioFeaturesType,
-          )
-        }),
-      )
-
-      playlistWithTracks.push({
-        ...playlist,
-        tracksWithAudioData: tracksWithAudioFeatures,
-      })
-
-      for (const eventKey in events) {
-        const event = events[eventKey]
-
-        if (event._embedded === undefined) {
-          continue
-        }
-
-        const eventTracks = event._embedded.tracks
-        let eventTracksSum = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-        let playlistTracksSum = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-        // Loop through each track in the event tracks and add it to the eventTracksSum array.
-        for (let i = 0; i < eventTracks.length; i++) {
-          const featureNumbers = this.convertTrackToValidNumbers(eventTracks[i])
-          for (let j = 0; j < featureNumbers.length; j++) {
-            eventTracksSum[j] += featureNumbers[j]
-          }
-        }
-
-        // Loop through each track in the playlist tracks and add it to the playlistTracksSum array.
-        for (let i = 0; i < tracksWithAudioFeatures.length; i++) {
-          const featureNumbers = this.convertTrackToValidNumbers(
-            tracksWithAudioFeatures[i],
-          )
-          for (let j = 0; j < featureNumbers.length; j++) {
-            playlistTracksSum[j] += featureNumbers[j]
-          }
-        }
-
-        // Calculate the average of the eventTracksSum and playlistTracksSum arrays.
-        eventTracksSum = eventTracksSum.map((value) => {
-          return value / eventTracks.length
-        })
-
-        playlistTracksSum = playlistTracksSum.map((value) => {
-          return value / tracksWithAudioFeatures.length
-        })
-
-        // Calculate the similarity between the eventTracksSum and playlistTracksSum arrays.
-        let similarity = this.cosineSimilarity(
-          eventTracksSum,
-          playlistTracksSum,
-        )
-
-        // If the similarity is not a number, set it to 0.
-        if (Number.isNaN(similarity)) {
-          similarity = 0
-        }
-
-        // If the event is already in the eventsSimilarity array, add the similarity to its similarity array
-        if (eventsSimilarity.find((e) => e._id === event._id)) {
-          const eventIndex = eventsSimilarity.findIndex(
-            (e) => e._id === event._id,
-          )
-          eventsSimilarity[eventIndex].similarity.push(similarity)
-        } else {
-          // If the event is not in the eventsSimilarity array, add it with its similarity
-          eventsSimilarity.push({ ...event, similarity: [similarity] })
-        }
-      }
-    }
-
-    console.log(eventsSimilarity)
-
-    // Return the eventsSimilarity array after performing the following transformations:
-
-    return eventsSimilarity
+    return this.eventsSimilarity
       .map((event) => {
         // For each event, return a new object that includes all properties of the event
         // and a new property 'matchScore' which is the average of the values in the 'similarity' array

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { AppController } from './appController'
-import RecommendationsLogic from '../logics/recommendationsLogic'
+import RecommendationsLogicV2 from '../logics/recommendationLogicV2'
 import { Authenticated } from '../middlewares/authenticationMiddleware'
 
 export default class RecommendationControllerV2 extends AppController {
@@ -29,7 +29,7 @@ export default class RecommendationControllerV2 extends AppController {
     // All data should be scaled down to a value between 0 and 1
 
     const apiKey = req.headers.authorization!.split(' ')[1]
-    const recommendationsLogic = new RecommendationsLogic()
+    const recommendationsLogic = new RecommendationsLogicV2()
     const events = await recommendationsLogic.recommendEvent(
       apiKey,
       playlistIds,

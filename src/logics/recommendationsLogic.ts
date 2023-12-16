@@ -8,7 +8,7 @@ import {
 import SpotifyLogic from './spotifyLogic'
 import Event from '../models/event'
 
-export default class RecommendationsLogic {
+export default class RecommendationsLogicV2 {
   public generateMeanScore(tracks: Track[]): number {
     // For each track, convert its features to valid numbers
     const scores = tracks.map((track) => {
@@ -220,7 +220,8 @@ export default class RecommendationsLogic {
       }
     }
 
-    console.log(eventsSimilarity)
+    // console.log(eventsSimilarity)
+    console.log('v1')
 
     // Return the eventsSimilarity array after performing the following transformations:
 

@@ -294,26 +294,31 @@ export default class SpotifyLogic {
   public async getArtistsByIds(
     apiKey: string,
     artistIds: string[],
-  ): Promise<SpotifyArtistType[]> {
-    return await axios
-      .get(`https://api.spotify.com/v1/artists?ids=${artistIds.toString()}`, {
-        headers: {
-          Authorization: 'Bearer ' + apiKey,
-        },
-      })
-      .then((response) => {
-        console.log(response.data)
-        const artists = response.data.artists as SpotifyArtistType[]
-        return artists.filter((artist) => artist !== null)
-      })
-      .catch((error) => {
-        if (error.response.status === 401) {
-          console.log('401')
+  ): Promise<SpotifyArtistType[] | boolean> {
+    const accessTokenRepository = new AccessTokenRepository()
+    const accessToken = await accessTokenRepository.getAccessToken(apiKey)
+    if (accessToken) {
+      return await axios
+        .get(`https://api.spotify.com/v1/artists?ids=${artistIds.toString()}`, {
+          headers: {
+            Authorization: 'Bearer ' + accessToken.spotifyAccessToken,
+          },
+        })
+        .then((response) => {
+          const artists = response.data.artists as SpotifyArtistType[]
+          return artists.filter((artist) => artist !== null)
+        })
+        .catch((error) => {
+          if (error.response.status === 401) {
+            console.log(error)
+            console.log('401')
+            return []
+          }
+          console.error(error)
           return []
-        }
-        console.error(error)
-        return []
-      })
+        })
+    }
+    return false
   }
 
   public async getTopTracksOfArtist(
