@@ -4,18 +4,7 @@ import CoreRepository from './coreRepository'
 
 export class TrackRepository extends CoreRepository {
   constructor() {
-    super(
-      'tracks',
-      ['spotifyId'],
-      [
-        {
-          name: 'artistTracks',
-          foreignTable: 'artists',
-          primaryKey: 'spotifyId',
-          foreignKey: 'spotifyId',
-        },
-      ],
-    )
+    super('tracks', ['spotifyId'])
   }
 
   public async linkTracktoArtist(

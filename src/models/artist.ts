@@ -17,6 +17,7 @@ export class Artist {
   youtube?: string
   spotify?: string
   lastfm?: string
+  genres?: string
   _embedded?: {
     tracks: Track[]
   }

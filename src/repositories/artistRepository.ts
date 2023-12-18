@@ -4,18 +4,7 @@ import Event from '../models/event'
 
 export class ArtistRepository extends CoreRepository {
   constructor() {
-    super(
-      'artists',
-      ['spotifyId', 'ticketMasterId'],
-      [
-        {
-          name: 'artistEvents',
-          foreignTable: 'events',
-          primaryKey: 'ticketMasterId',
-          foreignKey: 'ticketMasterId',
-        },
-      ],
-    )
+    super('artists', ['spotifyId'])
   }
 
   public async getArtists(): Promise<Artist[]> {

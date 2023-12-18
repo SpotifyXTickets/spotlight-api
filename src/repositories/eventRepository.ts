@@ -1,20 +1,9 @@
-import Event from '../models/event'
+import Event, { EmbeddedEvent } from '../models/event'
 import CoreRepository from './coreRepository'
 
 export class EventRepository extends CoreRepository {
   constructor() {
-    super(
-      'events',
-      ['ticketMasterId'],
-      [
-        {
-          name: 'artistEvents',
-          foreignTable: 'artists',
-          primaryKey: 'ticketMasterId',
-          foreignKey: 'ticketMasterId',
-        },
-      ],
-    )
+    super('events')
   }
 
   public async linkEventToArtist(
@@ -28,9 +17,9 @@ export class EventRepository extends CoreRepository {
     )
   }
 
-  public async getEvents(): Promise<Event[]> {
+  public async getEvents(): Promise<EmbeddedEvent[]> {
     const data = await (await this.collection).find({}).toArray()
-    return data as unknown as Event[]
+    return data as unknown as EmbeddedEvent[]
   }
 
   public async createEvent(event: Event): Promise<Event | boolean> {

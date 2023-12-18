@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson'
 import Track from './track'
+import Artist from './artist'
 
 export type Event = {
   _id: ObjectId // Will be the same as the ticketMasterId for the event.
@@ -17,8 +18,12 @@ export type Event = {
   ticketLink: string
   startDate: Date
   endDate?: Date
+}
+
+export type EmbeddedEvent = Event & {
   _embedded?: {
     tracks: Track[]
+    artists: Artist[]
   }
 }
 

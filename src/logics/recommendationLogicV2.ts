@@ -10,11 +10,11 @@ import {
   SpotifyTopTrackType,
 } from '../types/spotifyTypes'
 import SpotifyLogic from './spotifyLogic'
-import Event from '../models/event'
+import Event, { EmbeddedEvent } from '../models/event'
 
 export default class RecommendationsLogic {
   // Define empty data variables
-  events: Event[] = []
+  events: EmbeddedEvent[] = []
   eventsSimilarity: Array<Event & { similarity: number[] }> = []
   userPlaylists: SpotifyPlaylistType[] = []
   playlistWithTracks: Array<
@@ -60,7 +60,6 @@ export default class RecommendationsLogic {
 
       while (clonedTracks.length > 0) {
         const tracksChunk = clonedTracks.splice(0, 100)
-        console.log(tracksChunk.length)
 
         for (let i = 0; i < tracksChunk.length; i++) {
           if (tracksChunk[i] == null) {
@@ -248,7 +247,7 @@ export default class RecommendationsLogic {
 
   private async recommendEventLayerOne() {
     this.sortObject(this.artistPlaylistNames)
-    console.log(this.events[0])
+    console.log(this.events[6]._embedded?.artists)
   }
 
   private async recommendEventLayerTwo() {}
