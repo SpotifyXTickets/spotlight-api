@@ -57,43 +57,48 @@ export default class RecommendationsLogic {
         [],
         this.tracks,
       ) as SpotifyTopTrackType[]
-      // TO-DO: Ask Stijn if this limits the data to 100 tracks
-      const tracksChunk = clonedTracks.splice(0, 100)
 
-      for (let i = 0; i < tracksChunk.length; i++) {
-        for (let j = 0; j < tracksChunk[i].artists.length; j++) {
-          this.artistPlaylistIds.push(tracksChunk[i].artists[j].id)
+      while (clonedTracks.length > 0) {
+        const tracksChunk = clonedTracks.splice(0, 100)
+        console.log(tracksChunk.length)
 
-          const artistName = tracksChunk[i].artists[j].name.toString() // Convert artist name to string
-          this.artistPlaylistNames[artistName] =
-            this.artistPlaylistNames[artistName] + 1 || 1
+        for (let i = 0; i < tracksChunk.length; i++) {
+          if (tracksChunk[i] == null) {
+            continue
+          }
+          for (let j = 0; j < tracksChunk[i].artists.length; j++) {
+            this.artistPlaylistIds.push(tracksChunk[i].artists[j].id)
+
+            const artistName = tracksChunk[i].artists[j].name.toString() // Convert artist name to string
+            this.artistPlaylistNames[artistName] =
+              this.artistPlaylistNames[artistName] + 1 || 1
+          }
         }
+
+        // Fetch the audio features from the tracks.
+        const audioFeatures = await spotifyLogic.getTracksAudioFeatures(
+          apiKey,
+          tracksChunk.map((track) => track.id),
+        )
+
+        if (audioFeatures.length === 0) {
+          continue
+        }
+
+        // Loop through each track and add it to the tracksWithAudioFeatures array.
+        this.tracksWithAudioFeatures.push(
+          ...tracksChunk.map((track) => {
+            return new Track(
+              track,
+              audioFeatures
+                .filter((a) => a !== null)
+                .find((audioFeature) => {
+                  return audioFeature.id === track.id
+                }) as SpotifyAudioFeaturesType,
+            )
+          }),
+        )
       }
-
-      // Fetch the audio features from the tracks.
-      const audioFeatures = await spotifyLogic.getTracksAudioFeatures(
-        apiKey,
-        tracksChunk.map((track) => track.id),
-      )
-
-      if (audioFeatures.length === 0) {
-        continue
-      }
-
-      // Loop through each track and add it to the tracksWithAudioFeatures array.
-      this.tracksWithAudioFeatures.push(
-        ...tracksChunk.map((track) => {
-          return new Track(
-            track,
-            audioFeatures
-              .filter((a) => a !== null)
-              .find((audioFeature) => {
-                return audioFeature.id === track.id
-              }) as SpotifyAudioFeaturesType,
-          )
-        }),
-      )
-
       this.playlistWithTracks.push({
         ...playlist,
         tracksWithAudioData: this.tracksWithAudioFeatures,
@@ -241,15 +246,20 @@ export default class RecommendationsLogic {
     return sortedObject
   }
 
-  public async recommendEventLayerOne() {
+  private async recommendEventLayerOne() {
     this.sortObject(this.artistPlaylistNames)
+    console.log(this.events[0])
   }
+
+  private async recommendEventLayerTwo() {}
 
   public async recommendEvent(
     apiKey: string,
     playlistIds: string[],
   ): Promise<Array<Event & { matchScore: number }>> {
     await this.fetchData(apiKey, playlistIds)
+
+    this.recommendEventLayerOne()
 
     return this.eventsSimilarity
       .map((event) => {
