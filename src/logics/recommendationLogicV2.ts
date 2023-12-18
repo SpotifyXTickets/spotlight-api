@@ -16,12 +16,13 @@ export default class RecommendationsLogic {
   // Define empty data variables
   events: EmbeddedEvent[] = []
   eventsSimilarity: Array<Event & { similarity: number[] }> = []
+  recommendedEvents: Array<Event & { matchScore: number }> = []
   userPlaylists: SpotifyPlaylistType[] = []
   playlistWithTracks: Array<
     SpotifyPlaylistType & { tracksWithAudioData: Track[] }
   > = []
   artistPlaylistIds: string[] = []
-  artistPlaylistNames: { [key: string]: number } = {}
+  artistPlaylistIdsCount: { [key: string]: number } = {}
   tracks: SpotifyTopTrackType[] = []
   tracksWithAudioFeatures: Track[] = []
 
@@ -68,9 +69,9 @@ export default class RecommendationsLogic {
           for (let j = 0; j < tracksChunk[i].artists.length; j++) {
             this.artistPlaylistIds.push(tracksChunk[i].artists[j].id)
 
-            const artistName = tracksChunk[i].artists[j].name.toString() // Convert artist name to string
-            this.artistPlaylistNames[artistName] =
-              this.artistPlaylistNames[artistName] + 1 || 1
+            // const artistId = tracksChunk[i].artists[j].id
+            // this.artistPlaylistIdsCount[artistId] =
+            //   this.artistPlaylistIdsCount[artistId] + 1 || 1
           }
         }
 
@@ -233,21 +234,63 @@ export default class RecommendationsLogic {
     return sumAiBi / Math.sqrt(sumAiAi * sumBiBi)
   }
 
-  private sortObject(unsortedObject: { [key: string]: number }) {
-    // Convert the object into an array of tuples.
-    const entries = Object.entries(unsortedObject)
+  private sortArray(arr: string[], ascending: boolean = false) {
+    // Reduce the array to an object where the keys are the unique items in the array
+    // and the values are the counts of each item
+    const result = arr.reduce(
+      (result: { [key: string]: number }, item: any) => {
+        // Get the current count of this item
+        const count = result[item]
 
-    // Sort the array by the second element of each tuple (the count).
-    entries.sort((a, b) => b[1] - a[1])
+        // If the item doesn't exist in the result object yet, set its count to 1
+        if (count === undefined) {
+          result[item] = 1
+        } else {
+          // If the item does exist, increment its count
+          result[item] += 1
+        }
 
-    // If you want to convert it back into an object:
-    const sortedObject = Object.fromEntries(entries)
-    return sortedObject
+        // Return the result object for the next iteration
+        return result
+      },
+      {},
+    )
+
+    // Convert the result object to an array of [item, count] pairs
+    const entries = Object.entries(result)
+
+    if (ascending) {
+      // Sort the entries in ascending order of count
+      const sorted = entries.sort((entryA, entryB) => entryA[1] - entryB[1])
+
+      return sorted
+    } else {
+      // Sort the entries in descending order of count
+      const sorted = entries.sort((entryA, entryB) => entryB[1] - entryA[1])
+      return sorted
+    }
   }
 
   private async recommendEventLayerOne() {
-    this.sortObject(this.artistPlaylistNames)
-    console.log(this.events[6]._embedded?.artists)
+    const sortedArtistIdCount = this.sortArray(this.artistPlaylistIds, false)
+
+    for (let i = 0; i < sortedArtistIdCount.length; i++) {
+      const artistId = sortedArtistIdCount[i][0]
+      const artistEvent = this.events
+        .filter((s) => s._embedded!.artists.length !== 0)
+        .find(
+          (event) =>
+            event._embedded!.artists[0].spotifyId?.toString() === artistId,
+        )
+      if (artistEvent) {
+        console.log(artistEvent.name)
+        // Add the event to the recommendations
+        this.recommendedEvents.push(artistEvent as Event & { matchScore: 1 })
+
+        // Remove the recommended event from the events array
+        this.events = this.events.filter((event) => event !== artistEvent)
+      }
+    }
   }
 
   private async recommendEventLayerTwo() {}
@@ -259,21 +302,23 @@ export default class RecommendationsLogic {
     await this.fetchData(apiKey, playlistIds)
 
     this.recommendEventLayerOne()
+    this.recommendEventLayerTwo()
 
-    return this.eventsSimilarity
-      .map((event) => {
-        // For each event, return a new object that includes all properties of the event
-        // and a new property 'matchScore' which is the average of the values in the 'similarity' array
-        return {
-          ...event,
-          matchScore:
-            event.similarity.reduce((a, b) => a + b, 0) /
-            event.similarity.length,
-        }
-      })
-      .sort((a, b) => {
-        // Sort the transformed array in descending order of 'matchScore'
-        return b.matchScore - a.matchScore
-      })
+    return this.recommendedEvents
+    //   return this.eventsSimilarity
+    //     .map((event) => {
+    //       // For each event, return a new object that includes all properties of the event
+    //       // and a new property 'matchScore' which is the average of the values in the 'similarity' array
+    //       return {
+    //         ...event,
+    //         matchScore:
+    //           event.similarity.reduce((a, b) => a + b, 0) /
+    //           event.similarity.length,
+    //       }
+    //     })
+    //     .sort((a, b) => {
+    //       // Sort the transformed array in descending order of 'matchScore'
+    //       return b.matchScore - a.matchScore
+    //     })
   }
 }
