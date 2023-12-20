@@ -1,12 +1,27 @@
+import { UserRepository } from './../repositories/userRepository'
 import { User } from '../models/user'
 import { ErrorType } from '../types/errorType'
 import SpotifyLogic from './spotifyLogic'
 
 export class UserLogic {
   private spotifyLogic: SpotifyLogic
+  private userRepository: UserRepository
 
   constructor() {
     this.spotifyLogic = new SpotifyLogic()
+    this.userRepository = new UserRepository()
+  }
+
+  async addUser(user: User): Promise<User | ErrorType> {
+    // Add add account logic here
+    return (
+      (await this.userRepository.createUser(user)) ??
+      ({
+        status: 500,
+        message: 'Could not create user',
+        statusText: 'Internal Server Error',
+      } as ErrorType)
+    )
   }
 
   async deleteUser(userId: string): Promise<void | ErrorType> {

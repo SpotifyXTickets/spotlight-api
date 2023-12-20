@@ -9,13 +9,13 @@ export class SettingController extends AppController {
       {
         uri: '/:id',
         middlewares: [Authenticated],
-        method: this.getUserSettings,
+        method: this.getUserSettings.bind(this),
       },
       {
         uri: '/:id',
         HttpMethod: 'PUT',
         middlewares: [Authenticated],
-        method: this.updateUserSettings,
+        method: this.updateUserSettings.bind(this),
       },
     ])
   }

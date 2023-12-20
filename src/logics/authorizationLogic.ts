@@ -1,6 +1,8 @@
+import { Service } from 'typedi'
 import SpotifyLogic from './spotifyLogic'
 import { Response, Request } from 'express'
 
+@Service()
 export default class AuthorizationLogic {
   private spotifyLogic: SpotifyLogic
 

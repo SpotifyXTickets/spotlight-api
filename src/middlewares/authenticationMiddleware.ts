@@ -26,12 +26,11 @@ export const NotAuthenticated = async (
   next: NextFunction,
 ) => {
   const authenticationLogic = new AuthenticationLogic()
-  if (
-    !(await authenticationLogic.CheckAuthorization(
-      req.headers.authorization?.split(' ')[1],
-    ))
-  ) {
-    next()
+  const loggedIn = await authenticationLogic.CheckAuthorization(
+    req.headers.authorization?.split(' ')[1],
+  )
+  if (!loggedIn) {
+    return next()
   }
   res.status(401).json({ error: 'Already authenticated' })
 }

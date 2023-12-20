@@ -22,29 +22,43 @@ function setRouterRoutes(
     method: (req: Request, res: Response) => void
   }[],
 ): void {
-  routes.forEach((route) => {
-    switch (route.HttpMethod ? route.HttpMethod.toUpperCase() : undefined) {
-      case 'GET':
-        router.get(baseUri + route.uri, route.middlewares ?? [], route.method)
-        break
-      case 'POST':
-        router.post(baseUri + route.uri, route.middlewares ?? [], route.method)
-        break
-      case 'PUT':
-        router.put(baseUri + route.uri, route.middlewares ?? [], route.method)
-        break
-      case 'DELETE':
-        router.delete(
-          baseUri + route.uri,
-          route.middlewares ?? [],
-          route.method,
-        )
-        break
-      default:
-        router.get(baseUri + route.uri, route.middlewares ?? [], route.method)
-        break
-    }
-  })
+  routes
+    .sort((a, b) => {
+      if (a.uri.includes(':') && !b.uri.includes(':')) {
+        return 1
+      } else if (!a.uri.includes(':') && b.uri.includes(':')) {
+        return -1
+      } else {
+        return 0
+      }
+    })
+    .forEach((route) => {
+      switch (route.HttpMethod ? route.HttpMethod.toUpperCase() : undefined) {
+        case 'GET':
+          router.get(baseUri + route.uri, route.middlewares ?? [], route.method)
+          break
+        case 'POST':
+          router.post(
+            baseUri + route.uri,
+            route.middlewares ?? [],
+            route.method,
+          )
+          break
+        case 'PUT':
+          router.put(baseUri + route.uri, route.middlewares ?? [], route.method)
+          break
+        case 'DELETE':
+          router.delete(
+            baseUri + route.uri,
+            route.middlewares ?? [],
+            route.method,
+          )
+          break
+        default:
+          router.get(baseUri + route.uri, route.middlewares ?? [], route.method)
+          break
+      }
+    })
 }
 
 const router = asyncify(express.Router())

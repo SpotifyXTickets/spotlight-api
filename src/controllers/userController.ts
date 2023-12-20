@@ -15,13 +15,13 @@ export class UserController extends AppController {
       {
         uri: '/',
         middlewares: [Authenticated],
-        method: this.getUser,
+        method: this.getUser.bind(this),
       },
       {
         uri: '/:id',
         HttpMethod: 'DELETE',
         middlewares: [Authenticated],
-        method: this.deleteUser,
+        method: this.deleteUser.bind(this),
       },
     ])
   }

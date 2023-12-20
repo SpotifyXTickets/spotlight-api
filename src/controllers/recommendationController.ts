@@ -11,7 +11,7 @@ export default class RecommendationController extends AppController {
       {
         uri: '/',
         middlewares: [Authenticated],
-        method: this.recommendEvent,
+        method: this.recommendEvent.bind(this),
       },
     ])
   }

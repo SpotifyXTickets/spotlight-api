@@ -1,9 +1,8 @@
 import axios from 'axios'
-import dotenv from 'dotenv'
 
 export default class EventixLogic {
   public RequestAuthorization() {
-    let state = 'randomstring'
+    const state = 'randomstring'
 
     axios
       .get('https://auth.openticket.tech/token/authorize', {

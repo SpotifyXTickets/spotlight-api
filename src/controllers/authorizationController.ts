@@ -2,23 +2,28 @@ import { AppController } from './appController'
 import { Response, Request } from 'express'
 import AuthorizationLogic from '../logics/authorizationLogic'
 import { NotAuthenticated } from '../middlewares/authenticationMiddleware'
+import SpotifyLogic from '../logics/spotifyLogic'
+import isErrorResponse from '../helpers/isErrorResponse'
 
 export default class AuthorizationController extends AppController {
   private authorizationLogic: AuthorizationLogic
+  private spotifyLogic: SpotifyLogic
+
   constructor() {
     super()
     this.authorizationLogic = new AuthorizationLogic()
+    this.spotifyLogic = new SpotifyLogic()
     // uses the function in the baseclass to generate routes for the router.
     this.setRoutes([
       {
         uri: '/spotify',
         middlewares: [NotAuthenticated],
-        method: this.authorizeSpotify,
+        method: this.authorizeSpotify.bind(this),
       },
       {
         uri: '/',
         middlewares: [NotAuthenticated],
-        method: this.authorize,
+        method: this.authorize.bind(this),
       },
     ])
   }
@@ -33,7 +38,25 @@ export default class AuthorizationController extends AppController {
     )
     if (tokenResponse.error !== null) res.status(400).send(tokenResponse.error)
 
+    const userResponse = await this.spotifyLogic.getUser(
+      tokenResponse.accessToken,
+    )
+
+    if (isErrorResponse(userResponse)) {
+      res.status(userResponse.status).json({
+        error: {
+          status: userResponse.status,
+          message: userResponse.message,
+        },
+      })
+      return
+    }
+
     res.status(200).send({
+      displayName: userResponse.user.display_name,
+      profilePicture: userResponse.user.images[0]
+        ? userResponse.user.images[0].url
+        : '',
       accessToken: tokenResponse.accessToken,
     })
     return

@@ -2,23 +2,46 @@ import { EventRepository } from './../repositories/eventRepository'
 import { Request, Response } from 'express'
 import { AppController } from './appController'
 import TicketMasterLogic from '../logics/ticketMasterLogic'
+import { ErrorType } from '../types/errorType'
+import Event from '../models/event'
+import isErrorResponse from '../helpers/isErrorResponse'
+import { EventLogic } from '../logics/eventLogic'
 
 export default class EventController extends AppController {
   private ticketMasterLogic: TicketMasterLogic
+  private eventLogic: EventLogic
 
   constructor() {
     super()
     this.ticketMasterLogic = new TicketMasterLogic()
+    this.eventLogic = new EventLogic()
     this.setRoutes([
       {
         uri: '/',
         middlewares: [],
-        method: this.getAllEvents,
+        method: this.getAllEvents.bind(this),
       },
       {
         uri: '/:id',
         middlewares: [],
-        method: this.getEventById,
+        method: this.getEventById.bind(this),
+      },
+      {
+        uri: '/favorite',
+        middlewares: [],
+        method: this.getFavoriteEvents.bind(this),
+      },
+      {
+        HttpMethod: 'POST',
+        uri: '/favorite/:id',
+        middlewares: [],
+        method: this.addFavoriteEvent.bind(this),
+      },
+      {
+        HttpMethod: 'DELETE',
+        uri: '/favorite/:id',
+        middlewares: [],
+        method: this.removeFavoriteEvent.bind(this),
       },
     ])
   }
@@ -39,38 +62,50 @@ export default class EventController extends AppController {
    *               items:
    *                 $ref: '#/components/schemas/Event'  // Reference to Event schema (define this in Swagger options)
    */
-  public async getAllEvents(req: Request, res: Response): Promise<void> {
-    const ticketMasterLogic = new TicketMasterLogic()
-    const events = await ticketMasterLogic.getAllEvents()
+  public async getAllEvents(
+    req: Request,
+    res: Response,
+  ): Promise<ErrorType | void> {
+    const events = await this.eventLogic.getEvents()
 
-    console.log(events)
-    if (events === undefined) {
-      res.status(500).send('Error')
-      return
-    }
     res.send(events)
   }
 
-  public async getClassifications(req: Request, res: Response): Promise<void> {
-    const ticketMasterLogic = new TicketMasterLogic()
-    const classifications = await ticketMasterLogic.getClassifications()
-
-    if (classifications === undefined) {
-      res.status(500).send('Error')
-      return
-    }
-    res.send(classifications)
+  public async getFavoriteEvents(): Promise<void> {
+    throw new Error('Not implemented')
   }
 
-  public async getEventById(req: Request, res: Response): Promise<void> {
+  public async addFavoriteEvent(): Promise<void> {
+    throw new Error('Not implemented')
+  }
+
+  public async removeFavoriteEvent(): Promise<void> {
+    throw new Error('Not implemented')
+  }
+
+  public async getEventById(
+    req: Request,
+    res: Response<{
+      error?: ErrorType
+      event?: Event
+    }>,
+  ): Promise<void> {
     const id = req.params.id
     const eventRepository = new EventRepository()
-    const event = await eventRepository.getEventByTicketMasterId(id)
+    const event = await eventRepository.getEventById(id)
 
-    if (event === false) {
-      res.status(404).send('Not found')
+    if (isErrorResponse(event)) {
+      res.status(404).send({
+        error: {
+          status: 404,
+          statusText: 'Not Found',
+          message: 'Event not found',
+        },
+      })
       return
     }
-    res.send(event)
+    res.send({
+      event: event,
+    })
   }
 }

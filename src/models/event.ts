@@ -9,21 +9,32 @@ export type EmbeddedEvent = Event & {
   }
 }
 export type Event = {
-  _id: ObjectId // Will be the same as the ticketMasterId for the event.
-  ticketMasterId: string
+  _id?: ObjectId // Will be the same as the ticketMasterId for the event.
   meanScore: number
-  city: string
-  postalCode: string
-  country: string
-  address: string
-  locationLon: number
-  locationLat: number
-  description: string
   name: string
   imageUrl: string
-  ticketLink: string
-  startDate: Date
-  endDate?: Date
+  description: string
+  tickets: {
+    ticketeer: 'ticketmaster'
+    venue: {
+      city: string
+      country: string
+      address: string
+      postalCode: string
+      locationLon: number
+      locationLat: number
+    }
+    ticketId: string
+    ticketLink: string
+    eventStartDate: Date
+    eventEndData: Date
+    ticketSaleStartDate: Date
+    ticketSaleEndDate: Date
+  }[]
+  _embedded?: {
+    tracks: Track[]
+    artists: Artist[]
+  }
 }
 
 export default Event

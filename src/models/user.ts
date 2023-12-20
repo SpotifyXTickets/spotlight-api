@@ -1,5 +1,7 @@
 import { ObjectId } from 'bson'
 
+import Event from './event'
+
 export type EmbeddednUser = User & {
   _embedded?: {
     // Add embedded models here
@@ -16,4 +18,9 @@ export type User = {
     url: string
     width: number
   }>
+}
+
+export type UserWithApiKey = {
+  userId: string
+  favoriteEvents: Array<Event>
 }

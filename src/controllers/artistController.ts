@@ -11,11 +11,11 @@ export class ArtistController extends AppController {
     this.setRoutes([
       {
         uri: '/',
-        method: this.getArtists,
+        method: this.getArtists.bind(this),
       },
       {
         uri: '/:id',
-        method: this.getArtistById,
+        method: this.getArtistById.bind(this),
       },
     ])
   }

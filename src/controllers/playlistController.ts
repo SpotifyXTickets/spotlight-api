@@ -12,7 +12,7 @@ export class PlaylistController extends AppController {
       {
         uri: '/',
         middlewares: [Authenticated],
-        method: this.getPlaylists,
+        method: this.getPlaylists.bind(this),
       },
     ])
   }
