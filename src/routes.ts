@@ -28,7 +28,7 @@ const eventController = new EventController()
 const eventRoutes = eventController.getRoutes()
 
 eventRoutes.forEach((route) => {
-  router.get('/events' + route.uri, route.middlewares ?? [], route.method)
+  router.get('/event' + route.uri, route.middlewares ?? [], route.method)
 })
 
 const recommendationController = new RecommendationController()

@@ -6,19 +6,9 @@ export class EventRepository extends CoreRepository {
     super('events')
   }
 
-  public async linkEventToArtist(
-    event: Event,
-    artistId: string | number,
-  ): Promise<void> {
-    await this.insertIntoRelationTable(
-      'artistEvents',
-      artistId,
-      event.ticketMasterId,
-    )
-  }
-
   public async getEvents(): Promise<EmbeddedEvent[]> {
     const data = await (await this.collection).find({}).toArray()
+    console.log((await this.collection).find({}))
     return data as unknown as EmbeddedEvent[]
   }
 

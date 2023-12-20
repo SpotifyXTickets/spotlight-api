@@ -306,9 +306,9 @@ export default class RecommendationsLogic {
   ): Promise<Array<Event & { matchScore: number }>> {
     await this.fetchData(apiKey, playlistIds)
 
-    this.recommendEventLayerOne()
-    this.recommendEventLayerTwo()
-    this.recommendEventLayerThree()
+    await this.recommendEventLayerOne()
+    await this.recommendEventLayerTwo()
+    await this.recommendEventLayerThree()
 
     this.recommendedEvents.sort(this.compareByMatchScore)
 
