@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // TO-DO integrate minmax scaling
-// TO-DO Check if cosine math is correct. Means might be averages.
 
 import Track from '../models/track'
 import { EventRepository } from '../repositories/eventRepository'
@@ -11,6 +10,7 @@ import {
 } from '../types/spotifyTypes'
 import SpotifyLogic from './spotifyLogic'
 import Event, { EmbeddedEvent } from '../models/event'
+import { transformSpotifyToTrack } from '../transformers/trackTransformers'
 
 export default class RecommendationsLogic {
   // Define empty data variables
@@ -18,6 +18,7 @@ export default class RecommendationsLogic {
   eventsSimilarity: Array<Event & { similarity: number[] }> = []
   recommendedEvents: Array<Event & { matchScore: number }> = []
   userPlaylists: SpotifyPlaylistType[] = []
+  userTopArtists: any[] = []
   playlistWithTracks: Array<
     SpotifyPlaylistType & { tracksWithAudioData: Track[] }
   > = []
@@ -29,6 +30,9 @@ export default class RecommendationsLogic {
   public async fetchData(apiKey: string, playlistIds: string[]) {
     const spotifyLogic = new SpotifyLogic()
     const eventRepository = new EventRepository()
+
+    // Fetch top artists from user
+    this.userTopArtists = await spotifyLogic.getUserTopArtists(apiKey)
 
     this.events = await eventRepository.getEvents()
     const playlists = await spotifyLogic.getPlaylists(apiKey)
@@ -68,10 +72,6 @@ export default class RecommendationsLogic {
           }
           for (let j = 0; j < tracksChunk[i].artists.length; j++) {
             this.artistPlaylistIds.push(tracksChunk[i].artists[j].id)
-
-            // const artistId = tracksChunk[i].artists[j].id
-            // this.artistPlaylistIdsCount[artistId] =
-            //   this.artistPlaylistIdsCount[artistId] + 1 || 1
           }
         }
 
@@ -88,7 +88,7 @@ export default class RecommendationsLogic {
         // Loop through each track and add it to the tracksWithAudioFeatures array.
         this.tracksWithAudioFeatures.push(
           ...tracksChunk.map((track) => {
-            return new Track(
+            return transformSpotifyToTrack(
               track,
               audioFeatures
                 .filter((a) => a !== null)
@@ -103,67 +103,6 @@ export default class RecommendationsLogic {
         ...playlist,
         tracksWithAudioData: this.tracksWithAudioFeatures,
       })
-
-      for (const eventKey in this.events) {
-        const event = this.events[eventKey]
-
-        if (event._embedded === undefined) {
-          continue
-        }
-
-        const eventTracks = event._embedded.tracks
-        let eventTracksSum = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-        let playlistTracksSum = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-        // Loop through each track in the event tracks and add it to the eventTracksSum array.
-        for (let i = 0; i < eventTracks.length; i++) {
-          const featureNumbers = this.convertTrackToValidNumbers(eventTracks[i])
-          for (let j = 0; j < featureNumbers.length; j++) {
-            eventTracksSum[j] += featureNumbers[j]
-          }
-        }
-
-        // Loop through each track in the playlist tracks and add it to the playlistTracksSum array.
-        for (let i = 0; i < this.tracksWithAudioFeatures.length; i++) {
-          const featureNumbers = this.convertTrackToValidNumbers(
-            this.tracksWithAudioFeatures[i],
-          )
-          for (let j = 0; j < featureNumbers.length; j++) {
-            playlistTracksSum[j] += featureNumbers[j]
-          }
-        }
-
-        // Calculate the average of the eventTracksSum and playlistTracksSum arrays.
-        eventTracksSum = eventTracksSum.map((value) => {
-          return value / eventTracks.length
-        })
-
-        playlistTracksSum = playlistTracksSum.map((value) => {
-          return value / this.tracksWithAudioFeatures.length
-        })
-
-        // Calculate the similarity between the eventTracksSum and playlistTracksSum arrays.
-        let similarity = this.cosineSimilarity(
-          eventTracksSum,
-          playlistTracksSum,
-        )
-
-        // If the similarity is not a number, set it to 0.
-        if (Number.isNaN(similarity)) {
-          similarity = 0
-        }
-
-        // If the event is already in the eventsSimilarity array, add the similarity to its similarity array
-        if (this.eventsSimilarity.find((e) => e._id === event._id)) {
-          const eventIndex = this.eventsSimilarity.findIndex(
-            (e) => e._id === event._id,
-          )
-          this.eventsSimilarity[eventIndex].similarity.push(similarity)
-        } else {
-          // If the event is not in the eventsSimilarity array, add it with its similarity
-          this.eventsSimilarity.push({ ...event, similarity: [similarity] })
-        }
-      }
     }
   }
 
@@ -197,19 +136,19 @@ export default class RecommendationsLogic {
 
   // Performing scaling technique's in order to scale large values down to a value between 0 and 1
   private convertTrackToValidNumbers(track: Track): number[] {
-    if ((track.tempo as number) > 300) {
-      console.log('Too low tempo ' + track.tempo)
+    if ((track.audioData?.tempo as number) > 300) {
+      console.log('Too low tempo ' + track.audioData?.tempo)
     }
     return [
-      track.danceability ? track.danceability : 0,
-      track.energy ? track.energy : 0,
-      track.loudness ? 1 - (track.loudness + 60) / 60 : 0,
-      track.speechiness ? track.speechiness : 0,
-      track.accousticness ? track.accousticness : 0,
-      track.instrumentalness ? track.instrumentalness : 0,
-      track.liveness ? track.liveness : 0,
-      track.valence ? track.valence : 0,
-      track.tempo ? track.tempo / 300 : 0,
+      track.audioData?.danceability ? track.audioData?.danceability : 0,
+      track.audioData?.energy ? track.audioData?.energy : 0,
+      track.audioData?.loudness ? 1 - (track.audioData?.loudness + 60) / 60 : 0,
+      track.audioData?.speechiness ? track.audioData?.speechiness : 0,
+      track.audioData?.accousticness ? track.audioData?.accousticness : 0,
+      track.audioData?.instrumentalness ? track.audioData?.instrumentalness : 0,
+      track.audioData?.liveness ? track.audioData?.liveness : 0,
+      track.audioData?.valence ? track.audioData?.valence : 0,
+      track.audioData?.tempo ? track.audioData?.tempo / 300 : 0,
     ]
   }
 
@@ -271,6 +210,10 @@ export default class RecommendationsLogic {
     }
   }
 
+  private compareByMatchScore(a: any, b: any) {
+    return b.matchScore - a.matchScore
+  }
+
   private async recommendEventLayerOne() {
     const sortedArtistIdCount = this.sortArray(this.artistPlaylistIds, false)
 
@@ -283,9 +226,8 @@ export default class RecommendationsLogic {
             event._embedded!.artists[0].spotifyId?.toString() === artistId,
         )
       if (artistEvent) {
-        console.log(artistEvent.name)
         // Add the event to the recommendations
-        this.recommendedEvents.push(artistEvent as Event & { matchScore: 1 })
+        this.recommendedEvents.push({ ...artistEvent, matchScore: 1 })
 
         // Remove the recommended event from the events array
         this.events = this.events.filter((event) => event !== artistEvent)
@@ -293,7 +235,65 @@ export default class RecommendationsLogic {
     }
   }
 
-  private async recommendEventLayerTwo() {}
+  private async recommendEventLayerTwo() {
+    const recommendedEventsLayerTwo: Array<Event & { matchScore: number }> = []
+
+    for (const eventKey in this.events) {
+      const event = this.events[eventKey]
+
+      if (event._embedded === undefined) {
+        continue
+      }
+
+      const eventTracks = event._embedded.tracks
+      let eventTracksSum = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+      let playlistTracksSum = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+      // Loop through each track in the event tracks and add it to the eventTracksSum array.
+      for (let i = 0; i < eventTracks.length; i++) {
+        const featureNumbers = this.convertTrackToValidNumbers(eventTracks[i])
+        for (let j = 0; j < featureNumbers.length; j++) {
+          eventTracksSum[j] += featureNumbers[j]
+        }
+      }
+
+      // Loop through each track in the playlist tracks and add it to the playlistTracksSum array.
+      for (let i = 0; i < this.tracksWithAudioFeatures.length; i++) {
+        const featureNumbers = this.convertTrackToValidNumbers(
+          this.tracksWithAudioFeatures[i],
+        )
+        for (let j = 0; j < featureNumbers.length; j++) {
+          playlistTracksSum[j] += featureNumbers[j]
+        }
+      }
+
+      // Calculate the average of the eventTracksSum and playlistTracksSum arrays.
+      eventTracksSum = eventTracksSum.map((value) => {
+        return value / eventTracks.length
+      })
+
+      playlistTracksSum = playlistTracksSum.map((value) => {
+        return value / this.tracksWithAudioFeatures.length
+      })
+
+      // Calculate the similarity between the eventTracksSum and playlistTracksSum arrays.
+      let similarity = this.cosineSimilarity(eventTracksSum, playlistTracksSum)
+
+      // If the similarity is not a number, set it to 0.
+      if (Number.isNaN(similarity)) {
+        similarity = 0
+      }
+
+      recommendedEventsLayerTwo.push({ ...event, matchScore: similarity })
+    }
+
+    recommendedEventsLayerTwo.sort(this.compareByMatchScore)
+    this.recommendedEvents.push(...recommendedEventsLayerTwo.slice(0, 3))
+  }
+
+  private async recommendEventLayerThree() {
+    console.log(this.userTopArtists)
+  }
 
   public async recommendEvent(
     apiKey: string,
@@ -303,22 +303,10 @@ export default class RecommendationsLogic {
 
     this.recommendEventLayerOne()
     this.recommendEventLayerTwo()
+    this.recommendEventLayerThree()
+
+    this.recommendedEvents.sort(this.compareByMatchScore)
 
     return this.recommendedEvents
-    //   return this.eventsSimilarity
-    //     .map((event) => {
-    //       // For each event, return a new object that includes all properties of the event
-    //       // and a new property 'matchScore' which is the average of the values in the 'similarity' array
-    //       return {
-    //         ...event,
-    //         matchScore:
-    //           event.similarity.reduce((a, b) => a + b, 0) /
-    //           event.similarity.length,
-    //       }
-    //     })
-    //     .sort((a, b) => {
-    //       // Sort the transformed array in descending order of 'matchScore'
-    //       return b.matchScore - a.matchScore
-    //     })
   }
 }

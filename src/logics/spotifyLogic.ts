@@ -42,7 +42,7 @@ export default class SpotifyLogic {
     return false
   }
   private scope: string =
-    'user-read-private user-read-email user-follow-read playlist-read-private playlist-read-collaborative'
+    'user-read-private user-read-email user-follow-read playlist-read-private playlist-read-collaborative user-top-read'
   public async RefreshAuthorization(auth: {
     accessToken: string
     refreshToken: string
@@ -319,6 +319,36 @@ export default class SpotifyLogic {
         })
     }
     return false
+  }
+
+  public async getUserTopArtists(apiKey: string): Promise<SpotifyArtistType[]> {
+    const accessTokenRepository = new AccessTokenRepository()
+    const accessToken = await accessTokenRepository.getAccessToken(apiKey)
+    if (accessToken) {
+      return await axios
+        .get('https://api.spotify.com/v1/me/top/artists', {
+          headers: {
+            Authorization: 'Bearer ' + accessToken.spotifyAccessToken,
+          },
+        })
+        .then((response) => {
+          return response.data.items as SpotifyArtistType[]
+        })
+        .catch((error) => {
+          if (error.response.status === 401) {
+            console.log(error)
+            console.log('401')
+            return []
+          } else if (error.response.status === 403) {
+            console.log(error)
+            console.log('403')
+            return []
+          }
+          console.error(error)
+          return []
+        })
+    }
+    return []
   }
 
   public async getTopTracksOfArtist(

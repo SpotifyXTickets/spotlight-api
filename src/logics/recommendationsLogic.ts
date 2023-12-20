@@ -7,6 +7,7 @@ import {
 } from '../types/spotifyTypes'
 import SpotifyLogic from './spotifyLogic'
 import Event from '../models/event'
+import { transformSpotifyToTrack } from '../transformers/trackTransformers'
 
 export default class RecommendationsLogicV2 {
   public generateMeanScore(tracks: Track[]): number {
@@ -39,19 +40,19 @@ export default class RecommendationsLogicV2 {
 
   // Performing scaling technique's in order to scale large values down to a value between 0 and 1
   private convertTrackToValidNumbers(track: Track): number[] {
-    if ((track.tempo as number) > 300) {
-      console.log('Too low tempo ' + track.tempo)
+    if ((track.audioData?.tempo as number) > 300) {
+      console.log('Too low tempo ' + track.audioData?.tempo)
     }
     return [
-      track.danceability ? track.danceability : 0,
-      track.energy ? track.energy : 0,
-      track.loudness ? 1 - (track.loudness + 60) / 60 : 0,
-      track.speechiness ? track.speechiness : 0,
-      track.accousticness ? track.accousticness : 0,
-      track.instrumentalness ? track.instrumentalness : 0,
-      track.liveness ? track.liveness : 0,
-      track.valence ? track.valence : 0,
-      track.tempo ? track.tempo / 300 : 0,
+      track.audioData?.danceability ? track.audioData?.danceability : 0,
+      track.audioData?.energy ? track.audioData?.energy : 0,
+      track.audioData?.loudness ? 1 - (track.audioData?.loudness + 60) / 60 : 0,
+      track.audioData?.speechiness ? track.audioData?.speechiness : 0,
+      track.audioData?.accousticness ? track.audioData?.accousticness : 0,
+      track.audioData?.instrumentalness ? track.audioData?.instrumentalness : 0,
+      track.audioData?.liveness ? track.audioData?.liveness : 0,
+      track.audioData?.valence ? track.audioData?.valence : 0,
+      track.audioData?.tempo ? track.audioData?.tempo / 300 : 0,
     ]
   }
 
@@ -142,7 +143,7 @@ export default class RecommendationsLogicV2 {
       // Loop through each track and add it to the tracksWithAudioFeatures array.
       tracksWithAudioFeatures.push(
         ...tracksChunk.map((track) => {
-          return new Track(
+          return transformSpotifyToTrack(
             track,
             audioFeatures
               .filter((a) => a !== null)
