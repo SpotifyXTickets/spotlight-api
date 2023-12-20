@@ -1,8 +1,9 @@
 import { ObjectId } from 'bson'
 
 import Event from './event'
+import Artist from './artist'
 
-export type EmbeddednUser = User & {
+export type EmbeddedUser = User & {
   _embedded?: {
     // Add embedded models here
   }

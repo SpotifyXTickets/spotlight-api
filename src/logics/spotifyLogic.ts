@@ -43,7 +43,7 @@ export default class SpotifyLogic {
     return false
   }
   private scope: string =
-    'user-read-private user-read-email user-follow-read playlist-read-private playlist-read-collaborative'
+    'user-read-private user-read-email user-follow-read playlist-read-private playlist-read-collaborative user-top-read'
   public async RefreshAuthorization(auth: {
     accessToken: string
     refreshToken: string
