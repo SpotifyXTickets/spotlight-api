@@ -1,5 +1,13 @@
 import { ObjectId } from 'bson'
 
+import Event from './event'
+
+export type EmbeddedUser = User & {
+  _embedded?: {
+    // Add embedded models here
+  }
+}
+
 export type User = {
   _id: ObjectId // Will be the same as the spotifyId
   country: string
@@ -10,4 +18,9 @@ export type User = {
     url: string
     width: number
   }>
+}
+
+export type UserWithApiKey = {
+  userId: string
+  favoriteEvents: Array<Event>
 }

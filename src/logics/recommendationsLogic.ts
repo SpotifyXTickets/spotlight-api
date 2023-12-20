@@ -7,16 +7,22 @@ import {
 } from '../types/spotifyTypes'
 import SpotifyLogic from './spotifyLogic'
 import Event from '../models/event'
-import { transformSpotifyToTrack } from '../transformers/trackTransformers'
+import { transformSpotifyToTrack } from '../transformers/transformSpotifyToTrack'
 
-export default class RecommendationsLogicV2 {
+export default class RecommendationsLogic {
+  private playlist: number[]
+  private events: { [key: string]: number[] }
+
+  constructor(playlist?: number[], events?: { [key: string]: number[] }) {
+    this.playlist = playlist ?? []
+    this.events = events ? events : {}
+  }
+
   public generateMeanScore(tracks: Track[]): number {
     // For each track, convert its features to valid numbers
     const scores = tracks.map((track) => {
-      // Convert the track's features to valid numbers.
       const A: number[] = this.convertTrackToValidNumbers(track)
       let sumAiAi = 0
-      // Calculate the sum of the track's features
       for (let i = 0; i < A.length; i++) {
         sumAiAi += A[i] * A[i]
       }
@@ -44,15 +50,19 @@ export default class RecommendationsLogicV2 {
       console.log('Too low tempo ' + track.audioData?.tempo)
     }
     return [
-      track.audioData?.danceability ? track.audioData?.danceability : 0,
-      track.audioData?.energy ? track.audioData?.energy : 0,
-      track.audioData?.loudness ? 1 - (track.audioData?.loudness + 60) / 60 : 0,
-      track.audioData?.speechiness ? track.audioData?.speechiness : 0,
-      track.audioData?.accousticness ? track.audioData?.accousticness : 0,
-      track.audioData?.instrumentalness ? track.audioData?.instrumentalness : 0,
-      track.audioData?.liveness ? track.audioData?.liveness : 0,
-      track.audioData?.valence ? track.audioData?.valence : 0,
-      track.audioData?.tempo ? track.audioData?.tempo / 300 : 0,
+      ...(track.audioData
+        ? [
+            track.audioData.danceability,
+            track.audioData.energy,
+            1 - (track.audioData.loudness! + 60) / 60,
+            track.audioData.speechiness,
+            track.audioData.accousticness,
+            track.audioData.instrumentalness,
+            track.audioData.liveness,
+            track.audioData.valence,
+            track.audioData.tempo / 300,
+          ]
+        : [0, 0, 0, 0, 0, 0, 0, 0, 0]),
     ]
   }
 
@@ -83,11 +93,8 @@ export default class RecommendationsLogicV2 {
   ): Promise<Array<Event & { matchScore: number }>> {
     const spotifyLogic = new SpotifyLogic()
     const eventRepository = new EventRepository()
-
-    // Initialize an array to store the similarity between each event and the playlists.
     const eventsSimilarity: Array<Event & { similarity: number[] }> = []
 
-    // Fetch all events from the EventRepository
     const events = await eventRepository.getEvents()
 
     // Fetch the user's playlists from Spotify using the provided API key
@@ -98,39 +105,28 @@ export default class RecommendationsLogicV2 {
       throw new Error('No playlists found')
     }
 
-    // Cast the userPlaylists to SpotifyPlaylistType.
     userPlaylists = userPlaylists as SpotifyPlaylistType[]
-
-    // Initialize an array to store the playlists with their tracks.
     const playlistWithTracks: Array<
       SpotifyPlaylistType & { tracksWithAudioData: Track[] }
     > = []
 
-    // Loop through each playlist and fetch its tracks and audio features.
+    // const scorePlaylists;
     for (const playlistKey in userPlaylists.filter(
       (p) => playlistIds.includes(p.id) || playlistIds.length === 0,
     ) as SpotifyPlaylistType[]) {
-      // Get the playlist from the userPlaylists array.
       const playlist = (
         userPlaylists.filter(
           (p) => playlistIds.includes(p.id) || playlistIds.length === 0,
         ) as SpotifyPlaylistType[]
       )[playlistKey]
-
-      // Fetch the tracks from the playlist.
       const tracks = (await spotifyLogic.getPlaylistTracks(
         apiKey,
         playlist.id,
       )) as SpotifyTopTrackType[]
-
-      // Initialize an array to store the tracks with their audio features.
       const tracksWithAudioFeatures: Track[] = []
-
-      // Clone the tracks array.
       const clonedTracks = Object.assign([], tracks) as SpotifyTopTrackType[]
+      // while (clonedTracks.length > 0) {
       const tracksChunk = clonedTracks.splice(0, 100)
-
-      // Fetch the audio features from the tracks.
       const audioFeatures = await spotifyLogic.getTracksAudioFeatures(
         apiKey,
         tracksChunk.map((track) => track.id),
@@ -153,6 +149,7 @@ export default class RecommendationsLogicV2 {
           )
         }),
       )
+      // }
 
       playlistWithTracks.push({
         ...playlist,
@@ -161,7 +158,6 @@ export default class RecommendationsLogicV2 {
 
       for (const eventKey in events) {
         const event = events[eventKey]
-
         if (event._embedded === undefined) {
           continue
         }
@@ -215,16 +211,12 @@ export default class RecommendationsLogicV2 {
           )
           eventsSimilarity[eventIndex].similarity.push(similarity)
         } else {
-          // If the event is not in the eventsSimilarity array, add it with its similarity
           eventsSimilarity.push({ ...event, similarity: [similarity] })
         }
       }
     }
 
-    // console.log(eventsSimilarity)
-    console.log('v1')
-
-    // Return the eventsSimilarity array after performing the following transformations:
+    console.log(eventsSimilarity)
 
     return eventsSimilarity
       .map((event) => {
@@ -238,8 +230,16 @@ export default class RecommendationsLogicV2 {
         }
       })
       .sort((a, b) => {
-        // Sort the transformed array in descending order of 'matchScore'
         return b.matchScore - a.matchScore
       })
+
+    // var similarity: { [key: string]: number } = {};
+
+    // for (let key in this.events) {
+    //   similarity[key] = this.cosineSimilarity(this.playlist, this.events[key]);
+    // }
+
+    // console.log(similarity);
+    // return similarity;
   }
 }

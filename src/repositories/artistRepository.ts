@@ -1,47 +1,41 @@
-import { Artist } from '../models/artist'
+import { EmbeddedArtist } from '../models/artist'
 import CoreRepository from './coreRepository'
-import Event from '../models/event'
 
 export class ArtistRepository extends CoreRepository {
   constructor() {
-    super('artists', ['spotifyId'])
+    super('artists', ['spotifyId', 'ticketMasterId'])
   }
 
-  public async getArtists(): Promise<Artist[]> {
+  public async getArtists(): Promise<EmbeddedArtist[]> {
     const data = await (await this.collection).find({}).toArray()
-    return data as unknown as Artist[]
+    return data as unknown as EmbeddedArtist[]
   }
 
   public async getArtistBySpotifyId(
     spotifyId: string,
-  ): Promise<Artist | boolean> {
+  ): Promise<EmbeddedArtist | boolean> {
     const data = await (await this.collection).findOne({ spotifyId: spotifyId })
-    return data ? (data as unknown as Artist) : false
+    return data ? (data as unknown as EmbeddedArtist) : false
   }
 
-  public async getArtistsByEvent(event: Event): Promise<Artist[]> {
-    const artistIds = await this.getKeysFromRelationTable('artistEvents', {
-      foreignKey: event.ticketMasterId,
+  public async getArtistsBySpotifyIds(
+    spotifyIds: string[],
+  ): Promise<EmbeddedArtist[]> {
+    const data = (await this.collection).find({
+      spotifyId: { $in: spotifyIds },
     })
 
-    if (artistIds === false) {
+    const artists = await data.toArray()
+    if (artists.length === 0) {
       return []
     }
 
-    const artists = (await (
-      await this.collection
-    )
-      .find({
-        spotifyId: {
-          $in: artistIds as string[],
-        },
-      })
-      .toArray()) as Artist[]
-
-    return artists
+    return artists as unknown as EmbeddedArtist[]
   }
 
-  public async createArtist(artist: Artist): Promise<Artist | boolean> {
+  public async createArtist(
+    artist: EmbeddedArtist,
+  ): Promise<EmbeddedArtist | boolean> {
     try {
       const data = await (await this.collection).insertOne(artist)
       return data.acknowledged ? artist : false
@@ -50,7 +44,9 @@ export class ArtistRepository extends CoreRepository {
     }
   }
 
-  public async updateArtist(artist: Artist): Promise<Artist | boolean> {
+  public async updateArtist(
+    artist: EmbeddedArtist,
+  ): Promise<EmbeddedArtist | boolean> {
     try {
       const filter = { spotifyId: artist.spotifyId }
       const update = { $set: artist }

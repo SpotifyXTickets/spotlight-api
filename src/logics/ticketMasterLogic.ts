@@ -1,9 +1,11 @@
 import axios, { AxiosResponse } from 'axios'
 import {
-  TicketMasterClassificationResponse,
+  TicketMasterArtistType,
   TicketMasterEventResponse,
   TicketMasterEventType,
 } from '../types/ticketMasterTypes'
+import { ErrorType } from '../types/errorType'
+import isErrorResponse from '../helpers/isErrorResponse'
 
 export default class TicketMasterLogic {
   public async getAllEvents(
@@ -32,24 +34,37 @@ export default class TicketMasterLogic {
     return response
   }
 
-  public async getClassifications(): Promise<{
-    events: TicketMasterEventType[]
-    links: TicketMasterEventResponse['_links']
-  } | void> {
+  public async getTMArtistsByEventId(
+    tmEventId: string,
+  ): Promise<TicketMasterArtistType[] | ErrorType> {
     const response = await axios
       .get(
-        `https://app.ticketmaster.com/discovery/v2/classifications.json?apikey=${process.env.TICKET_MASTER_API_KEY}`,
+        `https://app.ticketmaster.com/discovery/v2/events.json?apiKey=${process.env.TICKET_MASTER_API_KEY}&id=${tmEventId}`,
       )
-      .then((res: AxiosResponse<TicketMasterClassificationResponse>) => {
-        return {
-          events: res.data._embedded.classifications,
-          links: res.data._links,
-        }
+      .then((res: AxiosResponse<TicketMasterEventResponse>) => {
+        return res.data._embedded.events
       })
       .catch((error) => {
         console.log(error)
+        return {
+          status: 404,
+          statusText: 'Not Found',
+          message: 'Event was not found',
+        } as ErrorType
       })
 
-    return response
+    if (isErrorResponse(response)) {
+      return response
+    }
+
+    if (response === undefined) {
+      return {
+        status: 404,
+        statusText: 'Not Found',
+        message: 'Event was not found',
+      } as ErrorType
+    }
+
+    return response[0]._embedded.attractions as TicketMasterArtistType[]
   }
 }

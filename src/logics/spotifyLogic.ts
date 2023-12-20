@@ -11,6 +11,7 @@ import {
   SpotifyTopTrackType,
 } from '../types/spotifyTypes'
 import logger from '../logger'
+import { ErrorType } from '../types/errorType'
 
 export default class SpotifyLogic {
   private authenticationRepository: AuthenticationRepository
@@ -354,23 +355,36 @@ export default class SpotifyLogic {
   public async getTopTracksOfArtist(
     apiKey: string,
     artistId: string,
-  ): Promise<SpotifyTopTrackType[]> {
-    return await axios
-      .get(
-        `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=NL`,
-        {
-          headers: {
-            Authorization: 'Bearer ' + apiKey,
+  ): Promise<SpotifyTopTrackType[] | ErrorType> {
+    const accessTokenRepository = new AccessTokenRepository()
+    const accessToken = await accessTokenRepository.getAccessToken(apiKey)
+    if (accessToken) {
+      return await axios
+        .get(
+          `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=NL`,
+          {
+            headers: {
+              Authorization: 'Bearer ' + accessToken.spotifyAccessToken,
+            },
           },
-        },
-      )
-      .then((response) => {
-        return response.data.tracks
-      })
-      .catch((error) => {
-        console.error(error)
-        return false
-      })
+        )
+        .then((response) => {
+          return response.data.tracks
+        })
+        .catch((error) => {
+          console.error(error)
+          return {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            message: error.response.data,
+          }
+        })
+    }
+    return {
+      status: 401,
+      statusText: 'Unauthorized',
+      message: 'Unauthorized no accessToken found',
+    }
   }
 
   public async getTracksAudioFeatures(

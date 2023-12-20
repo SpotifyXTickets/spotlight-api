@@ -26,7 +26,7 @@ export type TicketMasterEventType = {
       noSpecificTime: boolean
       timeTBA: boolean
     }
-    end: {
+    end?: {
       localDate: string
       dateTime: string
       noSpecificTime: boolean
@@ -188,7 +188,7 @@ export type TicketMasterEventResponse = {
 
 export type TicketMasterClassificationResponse = {
   _embedded: {
-    classifications: any[]
+    classifications: unknown[]
   }
   _links: {
     self: {
