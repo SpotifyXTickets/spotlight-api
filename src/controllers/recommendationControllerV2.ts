@@ -35,7 +35,7 @@ export default class RecommendationControllerV2 extends AppController {
       playlistIds,
     )
 
-    res.send(events.slice(0, 10))
+    res.send(events.slice(0, 30))
   }
 }
 
