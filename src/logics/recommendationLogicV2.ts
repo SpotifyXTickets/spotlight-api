@@ -6,6 +6,7 @@ import { EventRepository } from '../repositories/eventRepository'
 import {
   SpotifyAudioFeaturesType,
   SpotifyPlaylistType,
+  // SpotifyTopArtistType,
   SpotifyTopTrackType,
 } from '../types/spotifyTypes'
 import SpotifyLogic from './spotifyLogic'
@@ -18,7 +19,7 @@ export default class RecommendationsLogic {
   eventsSimilarity: Array<Event & { similarity: number[] }> = []
   recommendedEvents: Array<Event & { matchScore: number }> = []
   userPlaylists: SpotifyPlaylistType[] = []
-  userTopArtists: any[] = []
+  // userTopArtists: SpotifyTopArtistType[] = []
   playlistWithTracks: Array<
     SpotifyPlaylistType & { tracksWithAudioData: Track[] }
   > = []
@@ -32,7 +33,11 @@ export default class RecommendationsLogic {
     const eventRepository = new EventRepository()
 
     // Fetch top artists from user
-    this.userTopArtists = await spotifyLogic.getUserTopArtists(apiKey)
+    // const tempTopArtists = await spotifyLogic.getUserTopArtists(apiKey)
+    // if (!Array.isArray(tempTopArtists)) {
+    //   throw new Error('No top artists found')
+    // }
+    // this.userTopArtists.push(tempTopArtists.map((artist) => artist))
 
     this.events = await eventRepository.getEvents()
     const playlists = await spotifyLogic.getPlaylists(apiKey)
@@ -288,11 +293,11 @@ export default class RecommendationsLogic {
     }
 
     recommendedEventsLayerTwo.sort(this.compareByMatchScore)
-    this.recommendedEvents.push(...recommendedEventsLayerTwo.slice(0, 3))
+    this.recommendedEvents.push(...recommendedEventsLayerTwo)
   }
 
   private async recommendEventLayerThree() {
-    console.log(this.userTopArtists)
+    // console.log(this.userTopArtists.id)
   }
 
   public async recommendEvent(
