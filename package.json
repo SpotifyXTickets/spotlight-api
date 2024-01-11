@@ -6,6 +6,10 @@
   "scripts": {
     "build": "tsc",
     "fetchData": "ts-node src/commands/importData.ts",
+    "createToken": "ts-node src/commands/createBackendToken.ts",
+    "importEvents": "ts-node src/commands/importEvents.ts",
+    "importData": "ts-node src/commands/importData.ts",
+    "dupeDb": "ts-node src/commands/dupeDB.ts",
     "recreateMeanScore": "ts-node src/commands/recreateMeanScores.ts",
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
@@ -32,6 +36,7 @@
     "mongodb": "^6.3.0",
     "node-cache": "^5.1.2",
     "ts-node": "^10.9.1",
+    "typedi": "^0.10.0",
     "typescript": "^5.2.2",
     "winston": "^3.11.0",
     "winston-mongodb": "^5.1.1"

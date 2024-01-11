@@ -7,42 +7,9 @@ export class TrackRepository extends CoreRepository {
     super('tracks', ['spotifyId'])
   }
 
-  public async linkTracktoArtist(
-    track: Track,
-    artistId: string | number,
-  ): Promise<void> {
-    await this.insertIntoRelationTable(
-      'artistTracks',
-      artistId,
-      track.spotifyId,
-    )
-  }
-
   public async getTrack(trackSpotifyId: string): Promise<Track> {
     const data = (await this.collection).findOne({ spotifyId: trackSpotifyId })
     return data as unknown as Track
-  }
-
-  public async getTracksByArtistId(artistSpotifyId: string): Promise<Track[]> {
-    const trackIds = await this.getKeysFromRelationTable('artistTracks', {
-      foreignKey: artistSpotifyId,
-    })
-
-    if (trackIds === false) {
-      return []
-    }
-
-    const tracks = await (
-      await this.collection
-    )
-      .find({
-        spotifyId: {
-          $in: trackIds as string[],
-        },
-      })
-      .toArray()
-
-    return tracks as unknown as Track[]
   }
 
   public async createTrack(track: Track): Promise<Track | boolean> {
@@ -61,14 +28,6 @@ export class TrackRepository extends CoreRepository {
   }
 
   public async deleteTrack(trackId: ObjectId): Promise<boolean> {
-    const delResult = await this.removeFromRelationTable('artistTracks', {
-      primaryKey: trackId,
-    })
-
-    if (!delResult) {
-      return false
-    }
-
     const collection = await this.collection
     const data = await collection.deleteOne({ _id: trackId })
     return data.acknowledged

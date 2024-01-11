@@ -11,6 +11,7 @@ import {
   SpotifyTopTrackType,
 } from '../types/spotifyTypes'
 import logger from '../logger'
+import { ErrorType } from '../types/errorType'
 
 export default class SpotifyLogic {
   private authenticationRepository: AuthenticationRepository
@@ -96,13 +97,14 @@ export default class SpotifyLogic {
       'randomstring',
       'http://localhost:8000' + req.url,
     )
+    console.log(redirectUri)
     res.redirect(
       `https://accounts.spotify.com/authorize?` +
         new URLSearchParams({
           response_type: 'code',
           client_id: process.env.SPOTIFY_CLIENT_ID || '',
           scope,
-          redirect_uri: `${redirectUri ?? this.apiHost}spotify_authorizer`,
+          redirect_uri: `http://localhost:3000/spotify_authorizer`,
           state: 'randomstring',
         }).toString(),
     )
@@ -119,12 +121,13 @@ export default class SpotifyLogic {
     error?: string
   }> {
     const accessTokenRepository = new AccessTokenRepository()
+    console.log(redirectUri)
     const token = await axios
       .post(
         'https://accounts.spotify.com/api/token',
         new URLSearchParams({
           grant_type: 'authorization_code',
-          redirect_uri: `${redirectUri ?? this.apiHost}spotify_authorizer`,
+          redirect_uri: `http://localhost:3000/spotify_authorizer`,
           code,
           client_id: process.env.SPOTIFY_CLIENT_ID || '',
           client_secret: process.env.SPOTIFY_CLIENT_SECRET || '',
@@ -354,23 +357,36 @@ export default class SpotifyLogic {
   public async getTopTracksOfArtist(
     apiKey: string,
     artistId: string,
-  ): Promise<SpotifyTopTrackType[]> {
-    return await axios
-      .get(
-        `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=NL`,
-        {
-          headers: {
-            Authorization: 'Bearer ' + apiKey,
+  ): Promise<SpotifyTopTrackType[] | ErrorType> {
+    const accessTokenRepository = new AccessTokenRepository()
+    const accessToken = await accessTokenRepository.getAccessToken(apiKey)
+    if (accessToken) {
+      return await axios
+        .get(
+          `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=NL`,
+          {
+            headers: {
+              Authorization: 'Bearer ' + accessToken.spotifyAccessToken,
+            },
           },
-        },
-      )
-      .then((response) => {
-        return response.data.tracks
-      })
-      .catch((error) => {
-        console.error(error)
-        return false
-      })
+        )
+        .then((response) => {
+          return response.data.tracks
+        })
+        .catch((error) => {
+          console.error(error)
+          return {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            message: error.response.data,
+          }
+        })
+    }
+    return {
+      status: 401,
+      statusText: 'Unauthorized',
+      message: 'Unauthorized no accessToken found',
+    }
   }
 
   public async getTracksAudioFeatures(

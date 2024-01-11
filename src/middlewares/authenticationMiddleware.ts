@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import AuthenticationLogic from '../logics/authenticationLogic'
+import AuthenticationLogic from '../logics/authorizationLogic'
 
 export const Authenticated = async (
   req: Request,
@@ -26,12 +26,11 @@ export const NotAuthenticated = async (
   next: NextFunction,
 ) => {
   const authenticationLogic = new AuthenticationLogic()
-  if (
-    !(await authenticationLogic.CheckAuthorization(
-      req.headers.authorization?.split(' ')[1],
-    ))
-  ) {
-    next()
+  const loggedIn = await authenticationLogic.CheckAuthorization(
+    req.headers.authorization?.split(' ')[1],
+  )
+  if (!loggedIn) {
+    return next()
   }
   res.status(401).json({ error: 'Already authenticated' })
 }

@@ -119,3 +119,4 @@ export type SpotifyPlaylistType = {
   type: string
   uri: string
 }
+// TODO add spotify User type.

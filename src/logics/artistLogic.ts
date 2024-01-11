@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson'
 import Artist from '../models/artist'
 import { ArtistRepository } from '../repositories/artistRepository'
 import SpotifyLogic from './spotifyLogic'
@@ -15,6 +16,15 @@ export class ArtistLogic {
     return await this.artistRepository.getArtists()
   }
 
+  public async getArtistById(id: string): Promise<Artist | null> {
+    const artist = await this.artistRepository.getArtistById(new ObjectId(id))
+    if (!artist) {
+      return null
+    }
+
+    return artist as Artist
+  }
+
   public async getArtistBySpotifyId(spotifyId: string): Promise<Artist | null> {
     const artist = await this.artistRepository.getArtistBySpotifyId(spotifyId)
     if (!artist) {
@@ -24,11 +34,11 @@ export class ArtistLogic {
     return artist as Artist
   }
 
-  public async getFavoriteArtists(apiKey: string): Promise<Artist[]> {
-    return (await this.spotifyLogic.getFollowingArtists(apiKey)).map(
-      (artist) => {
-        return new Artist(artist, null)
-      },
-    )
-  }
+  // public async getFavoriteArtists(apiKey: string): Promise<Artist[]> {
+  //   return (await this.spotifyLogic.getFollowingArtists(apiKey)).map(
+  //     (artist) => {
+  //       return new Artist(artist, null)
+  //     },
+  //   )
+  // }
 }

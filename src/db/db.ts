@@ -19,7 +19,7 @@ export class DB {
           },
         )
         this.client = client.connect().then(async (client) => {
-          resolve(client.db(process.env.MONGODB_DBNAME ?? 'CitricDB'))
+          resolve(client.db(process.env.MONGODB_COLLECTION_DB ?? 'CitricDB'))
           return client
         })
       } catch (e) {
@@ -29,10 +29,12 @@ export class DB {
   }
 
   public static async getClient(): Promise<MongoClient> {
+    if (this.client === undefined) await this.connect()
     return this.client
   }
 
   public static async getDB(): Promise<Db> {
+    if (this.db === undefined) await this.connect()
     return this.db
   }
 }

@@ -92,16 +92,26 @@ export default class RecommendationsLogic {
 
         // Loop through each track and add it to the tracksWithAudioFeatures array.
         this.tracksWithAudioFeatures.push(
-          ...tracksChunk.map((track) => {
-            return transformSpotifyToTrack(
-              track,
-              audioFeatures
-                .filter((a) => a !== null)
-                .find((audioFeature) => {
-                  return audioFeature.id === track.id
-                }) as SpotifyAudioFeaturesType,
-            )
-          }),
+          ...tracksChunk
+            .filter((t) => {
+              return (
+                audioFeatures
+                  .filter((a) => a !== null)
+                  .find((audioFeature) => {
+                    return audioFeature.id === t.id
+                  }) !== undefined
+              )
+            })
+            .map((track) => {
+              return transformSpotifyToTrack(
+                track,
+                audioFeatures
+                  .filter((a) => a !== null)
+                  .find((audioFeature) => {
+                    return audioFeature.id === track.id
+                  }) as SpotifyAudioFeaturesType,
+              )
+            }),
         )
       }
       this.playlistWithTracks.push({
@@ -304,12 +314,18 @@ export default class RecommendationsLogic {
     apiKey: string,
     playlistIds: string[],
   ): Promise<Array<Event & { matchScore: number }>> {
+    console.log('Fetching data...')
     await this.fetchData(apiKey, playlistIds)
 
-    this.recommendEventLayerOne()
-    this.recommendEventLayerTwo()
-    this.recommendEventLayerThree()
+    console.log('Reached layer one')
+    await this.recommendEventLayerOne()
+    console.log('Reached layer two')
+    await this.recommendEventLayerTwo()
+    console.log('Reached layer three')
+    await this.recommendEventLayerThree()
 
+    // Sort the recommended events by match score
+    console.log('Sorting events...')
     this.recommendedEvents.sort(this.compareByMatchScore)
 
     return this.recommendedEvents

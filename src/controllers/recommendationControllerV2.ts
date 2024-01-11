@@ -10,6 +10,7 @@ import { Authenticated } from '../middlewares/authenticationMiddleware'
  *   description: Endpoints related to version 2 of recommendations
  */
 
+export const maxDuration = 30
 export default class RecommendationControllerV2 extends AppController {
   constructor() {
     super()

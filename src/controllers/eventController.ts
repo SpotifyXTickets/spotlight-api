@@ -2,6 +2,10 @@ import { EventRepository } from './../repositories/eventRepository'
 import { Request, Response } from 'express'
 import { AppController } from './appController'
 import TicketMasterLogic from '../logics/ticketMasterLogic'
+import { ErrorType } from '../types/errorType'
+import Event from '../models/event'
+import isErrorResponse from '../helpers/isErrorResponse'
+import { EventLogic } from '../logics/eventLogic'
 
 /**
  * @swagger
@@ -12,25 +16,35 @@ import TicketMasterLogic from '../logics/ticketMasterLogic'
 
 export default class EventController extends AppController {
   private ticketMasterLogic: TicketMasterLogic
+  private eventLogic: EventLogic
 
   constructor() {
     super()
     this.ticketMasterLogic = new TicketMasterLogic()
+    this.eventLogic = new EventLogic()
     this.setRoutes([
       {
         uri: '/events',
         middlewares: [],
-        method: this.getAllEvents,
+        method: this.getAllEvents.bind(this),
       },
       {
         uri: '/events/:id',
         middlewares: [],
-        method: this.getEventById,
+        method: this.getEventById.bind(this),
+      },
+
+      {
+        HttpMethod: 'POST',
+        uri: '/favorite/:id',
+        middlewares: [],
+        method: this.addFavoriteEvent.bind(this),
       },
       {
-        uri: '/classifications',
+        HttpMethod: 'DELETE',
+        uri: '/favorite/:id',
         middlewares: [],
-        method: this.getClassifications,
+        method: this.removeFavoriteEvent.bind(this),
       },
     ])
   }
@@ -52,46 +66,13 @@ export default class EventController extends AppController {
    *               items:
    *                 $ref: '#/components/schemas/Event'  // Reference to Event schema (define this in Swagger options)
    */
-  public async getAllEvents(req: Request, res: Response): Promise<void> {
-    const ticketMasterLogic = new TicketMasterLogic()
-    const events = await ticketMasterLogic.getAllEvents()
+  public async getAllEvents(
+    req: Request,
+    res: Response,
+  ): Promise<ErrorType | void> {
+    const events = await this.eventLogic.getEvents()
 
-    console.log(events)
-    if (events === undefined) {
-      res.status(500).send('Error')
-      return
-    }
     res.send(events)
-  }
-
-  /**
-   * @swagger
-   * /classifications:
-   *   get:
-   *     summary: Get event classifications.
-   *     description: Retrieve a list of event classifications.
-   *     tags: [Events]
-   *     responses:
-   *       200:
-   *         description: A list of event classifications.
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: array
-   *               items:
-   *                 $ref: '#/components/schemas/Classification'  // Reference to Classification schema
-   *       500:
-   *         description: Internal server error.
-   */
-  public async getClassifications(req: Request, res: Response): Promise<void> {
-    const ticketMasterLogic = new TicketMasterLogic()
-    const classifications = await ticketMasterLogic.getClassifications()
-
-    if (classifications === undefined) {
-      res.status(500).send('Error')
-      return
-    }
-    res.send(classifications)
   }
 
   /**
@@ -120,15 +101,38 @@ export default class EventController extends AppController {
    *       500:
    *         description: Internal server error.
    */
-  public async getEventById(req: Request, res: Response): Promise<void> {
+
+  public async getEventById(
+    req: Request,
+    res: Response<{
+      error?: ErrorType
+      event?: Event
+    }>,
+  ): Promise<void> {
     const id = req.params.id
     const eventRepository = new EventRepository()
-    const event = await eventRepository.getEventByTicketMasterId(id)
+    const event = await eventRepository.getEventById(id)
 
-    if (event === false) {
-      res.status(404).send('Not found')
+    if (isErrorResponse(event)) {
+      res.status(404).send({
+        error: {
+          status: 404,
+          statusText: 'Not Found',
+          message: 'Event not found',
+        },
+      })
       return
     }
-    res.send(event)
+    res.send({
+      event: event,
+    })
+  }
+
+  public async addFavoriteEvent(): Promise<void> {
+    throw new Error('Not implemented')
+  }
+
+  public async removeFavoriteEvent(): Promise<void> {
+    throw new Error('Not implemented')
   }
 }
