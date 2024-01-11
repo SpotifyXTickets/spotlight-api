@@ -3,6 +3,7 @@ import { AppController } from './appController'
 import RecommendationsLogicV2 from '../logics/recommendationLogicV2'
 import { Authenticated } from '../middlewares/authenticationMiddleware'
 
+export const maxDuration = 30
 export default class RecommendationControllerV2 extends AppController {
   constructor() {
     super()

@@ -98,7 +98,7 @@ export async function importArtistsFromSpotify(
           .map((a) => a.spotifyId),
       )
 
-      const transformParams = spotifyArtists.map<{
+      const transformParams = (spotifyArtists as SpotifyArtistType[]).map<{
         spotifyArtist: SpotifyArtistType
         tmArtist: TicketMasterArtistType
       }>((sa) => {

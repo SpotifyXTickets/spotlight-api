@@ -54,7 +54,7 @@ export class ArtistController extends AppController {
    *           description: An artist.
    */
   public async getArtistById(req: Request, res: Response): Promise<void> {
-    const artist = await this.artistLogic.getArtistBySpotifyId(req.params.id)
+    const artist = await this.artistLogic.getArtistById(req.params.id)
     res.status(200).send(artist)
   }
 }

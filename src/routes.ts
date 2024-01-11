@@ -10,6 +10,7 @@ import swaggerJsdoc from 'swagger-jsdoc'
 import SettingController from './controllers/settingController'
 import UserController from './controllers/userController'
 import PlaylistController from './controllers/playlistController'
+import { ArtistController } from './controllers/artistController'
 
 function setRouterRoutes(
   router: Router,
@@ -83,6 +84,9 @@ setRouterRoutes(router, '/user', userController.getRoutes())
 
 const playListController = new PlaylistController()
 setRouterRoutes(router, '/playlist', playListController.getRoutes())
+
+const artistController = new ArtistController()
+setRouterRoutes(router, '/artist', artistController.getRoutes())
 
 const recommendationControllerV2 = new RecommendationControllerV2()
 const recommendationV2Routes = recommendationControllerV2.getRoutes()

@@ -97,13 +97,14 @@ export default class SpotifyLogic {
       'randomstring',
       'http://localhost:8000' + req.url,
     )
+    console.log(redirectUri)
     res.redirect(
       `https://accounts.spotify.com/authorize?` +
         new URLSearchParams({
           response_type: 'code',
           client_id: process.env.SPOTIFY_CLIENT_ID || '',
           scope,
-          redirect_uri: `${redirectUri ?? this.apiHost}spotify_authorizer`,
+          redirect_uri: `http://localhost:3000/spotify_authorizer`,
           state: 'randomstring',
         }).toString(),
     )
@@ -120,12 +121,13 @@ export default class SpotifyLogic {
     error?: string
   }> {
     const accessTokenRepository = new AccessTokenRepository()
+    console.log(redirectUri)
     const token = await axios
       .post(
         'https://accounts.spotify.com/api/token',
         new URLSearchParams({
           grant_type: 'authorization_code',
-          redirect_uri: `${redirectUri ?? this.apiHost}spotify_authorizer`,
+          redirect_uri: `http://localhost:3000/spotify_authorizer`,
           code,
           client_id: process.env.SPOTIFY_CLIENT_ID || '',
           client_secret: process.env.SPOTIFY_CLIENT_SECRET || '',

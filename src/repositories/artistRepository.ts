@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson'
 import { EmbeddedArtist } from '../models/artist'
 import CoreRepository from './coreRepository'
 
@@ -9,6 +10,11 @@ export class ArtistRepository extends CoreRepository {
   public async getArtists(): Promise<EmbeddedArtist[]> {
     const data = await (await this.collection).find({}).toArray()
     return data as unknown as EmbeddedArtist[]
+  }
+
+  public async getArtistById(id: ObjectId): Promise<EmbeddedArtist | boolean> {
+    const data = await (await this.collection).findOne({ _id: id })
+    return data ? (data as unknown as EmbeddedArtist) : false
   }
 
   public async getArtistBySpotifyId(
