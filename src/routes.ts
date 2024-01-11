@@ -64,7 +64,7 @@ const swaggerOptions: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000', // Specify the server URL where your API is hosted
+        url: 'http://localhost:8000', // Specify the server URL where your API is hosted
       },
     ],
   },

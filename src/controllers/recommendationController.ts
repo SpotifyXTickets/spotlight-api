@@ -3,6 +3,13 @@ import { AppController } from './appController'
 import RecommendationsLogic from '../logics/recommendationsLogic'
 import { Authenticated } from '../middlewares/authenticationMiddleware'
 
+/**
+ * @swagger
+ * tags:
+ *   name: Recommendations
+ *   description: Endpoints related to recommendations
+ */
+
 export default class RecommendationController extends AppController {
   constructor() {
     super()
@@ -16,6 +23,34 @@ export default class RecommendationController extends AppController {
     ])
   }
 
+  /**
+   * @swagger
+   * /recommendations:
+   *   get:
+   *     summary: Get recommended events.
+   *     description: Retrieve recommended events based on user preferences and playlist selection.
+   *     tags: [Recommendations]
+   *     security:
+   *       - BearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: playlistIds
+   *         description: Comma-separated list of playlist IDs.
+   *         required: false
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: A list of recommended events.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/Recommend'
+   *       401:
+   *         description: Unauthorized.
+   */
   public async recommendEvent(req: Request, res: Response): Promise<void> {
     if (req.headers.authorization === undefined) {
       res.status(401).json({ error: 'Unauthorized' })
@@ -23,8 +58,9 @@ export default class RecommendationController extends AppController {
     }
 
     const playlistIds = req.query.playlistIds
-      ? ((req.query.playlistIds as string).split(',') as string[])
+      ? (req.query.playlistIds as string).split(',')
       : []
+
     // Test data
     // Data order should be [Danceability, Energy, Loudness, Speechiness, Acousticness, Instrumentalness, Liveness, Valence, Tempo]
     // All data should be scaled down to a value between 0 and 1

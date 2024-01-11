@@ -1,7 +1,11 @@
 import SwaggerOptions from '../swaggerOptions'
 import tags from './tags'
 import events from './events'
-import spotify from './spotify'
+
+import authorize from './authorize'
+import recommend from './recommend'
+import recommend2 from './recommend2'
+
 import openapiConfig from './basicinfo'
 
 export default {
@@ -10,6 +14,9 @@ export default {
   ...tags,
   paths: {
     ...events,
-    ...spotify,
+
+    ...authorize,
+    ...recommend,
+    ...recommend2,
   },
 }

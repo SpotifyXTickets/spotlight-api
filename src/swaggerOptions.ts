@@ -12,7 +12,29 @@ const EventSchema = {
 }
 
 // Define the schema for the Home object
-const HomeSchema = {
+const AuthorizeSchema = {
+  type: 'object',
+  properties: {
+    id: { type: 'string' },
+    title: { type: 'string' },
+    content: { type: 'string' },
+    // ... (other properties of the Home object)
+  },
+}
+
+// Define the schema for the Home object
+const RecommendSchema = {
+  type: 'object',
+  properties: {
+    id: { type: 'string' },
+    title: { type: 'string' },
+    content: { type: 'string' },
+    // ... (other properties of the Home object)
+  },
+}
+
+// Define the schema for the Home object
+const Recommend2Schema = {
   type: 'object',
   properties: {
     id: { type: 'string' },
@@ -33,13 +55,16 @@ const swaggerOptions: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000', // Base URL for API
+        url: 'http://localhost:8000', // Base URL for API
       },
     ],
     components: {
       schemas: {
-        Event: EventSchema, // Include the Event schema
-        Home: HomeSchema, // Include the Home schema
+        Event: EventSchema,
+
+        Auth: AuthorizeSchema,
+        Recommend: RecommendSchema,
+        Recommend2: Recommend2Schema,
       },
     },
   },
