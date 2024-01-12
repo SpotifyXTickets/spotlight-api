@@ -1,46 +1,72 @@
 // Import the 'swagger-jsdoc' library for generating Swagger documentation.
 import swaggerJsdoc from 'swagger-jsdoc'
 
-// Define the schema for the Event object
 const EventSchema = {
   type: 'object',
   properties: {
     id: { type: 'string' },
     name: { type: 'string' },
-    // ... (other properties of the Event object)
+  },
+}
+const ArtistSchema = {
+  type: 'object',
+  properties: {
+    id: { type: 'string' },
+    title: { type: 'string' },
+    content: { type: 'string' },
   },
 }
 
-// Define the schema for the Home object
 const AuthorizeSchema = {
   type: 'object',
   properties: {
     id: { type: 'string' },
     title: { type: 'string' },
     content: { type: 'string' },
-    // ... (other properties of the Home object)
   },
 }
 
-// Define the schema for the Home object
 const RecommendSchema = {
   type: 'object',
   properties: {
     id: { type: 'string' },
     title: { type: 'string' },
     content: { type: 'string' },
-    // ... (other properties of the Home object)
   },
 }
 
-// Define the schema for the Home object
 const Recommend2Schema = {
   type: 'object',
   properties: {
     id: { type: 'string' },
     title: { type: 'string' },
     content: { type: 'string' },
-    // ... (other properties of the Home object)
+  },
+}
+
+const PlaylistSchema = {
+  type: 'object',
+  properties: {
+    id: { type: 'string' },
+    title: { type: 'string' },
+    content: { type: 'string' },
+  },
+}
+
+const SettingSchema = {
+  type: 'object',
+  properties: {
+    id: { type: 'string' },
+    title: { type: 'string' },
+    content: { type: 'string' },
+  },
+}
+
+const UserSchema = {
+  type: 'object',
+  properties: {
+    id: { type: 'string' },
+    name: { type: 'string' },
   },
 }
 
@@ -61,10 +87,13 @@ const swaggerOptions: swaggerJsdoc.Options = {
     components: {
       schemas: {
         Event: EventSchema,
-
+        Artist: ArtistSchema,
         Auth: AuthorizeSchema,
         Recommend: RecommendSchema,
         Recommend2: Recommend2Schema,
+        Playlist: PlaylistSchema,
+        Setting: SettingSchema,
+        User: UserSchema,
       },
     },
   },
