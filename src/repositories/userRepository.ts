@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import CoreRepository from './coreRepository'
+import CoreRepository from '../coreRepository'
 import { User } from '../models/user'
 
 export class UserRepository extends CoreRepository {

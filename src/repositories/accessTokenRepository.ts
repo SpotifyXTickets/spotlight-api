@@ -1,5 +1,5 @@
 import { AccessToken } from './../models/accessToken'
-import CoreRepository from './coreRepository'
+import CoreRepository from '../coreRepository'
 import jwt from 'jwt-simple'
 
 export class AccessTokenRepository extends CoreRepository {

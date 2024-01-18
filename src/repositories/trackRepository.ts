@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import Track from '../models/track'
-import CoreRepository from './coreRepository'
+import CoreRepository from '../coreRepository'
 
 export class TrackRepository extends CoreRepository {
   constructor() {

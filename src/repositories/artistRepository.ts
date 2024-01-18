@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson'
 import { EmbeddedArtist } from '../models/artist'
-import CoreRepository from './coreRepository'
+import CoreRepository from '../coreRepository'
 
 export class ArtistRepository extends CoreRepository {
   constructor() {

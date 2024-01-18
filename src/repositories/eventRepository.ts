@@ -2,7 +2,7 @@ import { ObjectId } from 'bson'
 import isErrorResponse from '../helpers/isErrorResponse'
 import Event, { EmbeddedEvent } from '../models/event'
 import { ErrorType } from '../types/errorType'
-import CoreRepository from './coreRepository'
+import CoreRepository from '../coreRepository'
 
 export class EventRepository extends CoreRepository {
   constructor() {
