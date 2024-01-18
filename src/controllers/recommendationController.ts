@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { AppController } from './appController'
+import { CoreController } from '../coreController'
 import RecommendationsLogic from '../logics/recommendationsLogic'
 import { Authenticated } from '../middlewares/authenticationMiddleware'
 
@@ -10,7 +10,7 @@ import { Authenticated } from '../middlewares/authenticationMiddleware'
  *   description: Endpoints related to recommendations
  */
 
-export default class RecommendationController extends AppController {
+export default class RecommendationController extends CoreController {
   constructor() {
     super()
 

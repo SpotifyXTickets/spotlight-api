@@ -15,14 +15,14 @@ import { ArtistController } from './controllers/artistController'
 function setRouterRoutes(
   router: Router,
   baseUri: string = '',
-  routes: {
+  routes: Array<{
     uri: string
     HttpMethod?: string
     middlewares?: Array<
       (req: Request, res: Response, next: NextFunction) => void
     >
     method: (req: Request, res: Response) => void
-  }[],
+  }>,
 ): void {
   routes
     .sort((a, b) => {

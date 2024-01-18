@@ -1,8 +1,8 @@
 import { ArtistLogic } from '../logics/artistLogic'
-import { AppController } from './appController'
+import { CoreController } from '../coreController'
 import { Request, Response } from 'express'
 
-export class ArtistController extends AppController {
+export class ArtistController extends CoreController {
   private artistLogic: ArtistLogic
   constructor() {
     super()

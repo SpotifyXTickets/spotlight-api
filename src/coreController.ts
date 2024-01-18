@@ -9,7 +9,7 @@ import { NextFunction, Request, Response } from 'express'
  */
 
 /** Base class with the base functions for determining routes etc. */
-export class AppController {
+export class CoreController {
   private routes: {
     uri: string
     HttpMethod?: string

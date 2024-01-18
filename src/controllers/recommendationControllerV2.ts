@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { AppController } from './appController'
+import { CoreController } from '../coreController'
 import RecommendationsLogicV2 from '../logics/recommendationLogicV2'
 import { Authenticated } from '../middlewares/authenticationMiddleware'
 
@@ -11,7 +11,7 @@ import { Authenticated } from '../middlewares/authenticationMiddleware'
  */
 
 export const maxDuration = 30
-export default class RecommendationControllerV2 extends AppController {
+export default class RecommendationControllerV2 extends CoreController {
   constructor() {
     super()
 

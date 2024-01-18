@@ -1,7 +1,7 @@
 // Import the necessary modules and classes
 import { Request, Response } from 'express'
 import { Authenticated } from '../middlewares/authenticationMiddleware'
-import { AppController } from './appController'
+import { CoreController } from '../coreController'
 
 /**
  * @swagger
@@ -35,7 +35,7 @@ import { AppController } from './appController'
  *         404:
  *           description: User not found.
  */
-export class SettingController extends AppController {
+export class SettingController extends CoreController {
   constructor() {
     super()
 

@@ -1,6 +1,5 @@
-import { AppController } from './appController'
+import { CoreController } from '../coreController'
 import { Request, Response } from 'express'
-import { Authenticated } from '../middlewares/authenticationMiddleware'
 import SpotifyLogic from '../logics/spotifyLogic'
 
 /**
@@ -10,21 +9,9 @@ import SpotifyLogic from '../logics/spotifyLogic'
  *   description: Endpoints related to the home controller
  */
 
-export default class HomeController extends AppController {
+export default class HomeController extends CoreController {
   constructor() {
     super()
-
-    this.setRoutes([
-      {
-        uri: '/',
-        method: this.index,
-      },
-      {
-        uri: '/artist',
-        middlewares: [Authenticated],
-        method: this.getArtists,
-      },
-    ])
   }
 
   /**

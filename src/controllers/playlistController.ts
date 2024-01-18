@@ -1,9 +1,9 @@
 import { Request, Response } from 'express'
 import { Authenticated } from '../middlewares/authenticationMiddleware'
-import { AppController } from './appController'
+import { CoreController } from '../coreController'
 import { PlaylistLogic } from '../logics/playlistLogic'
 
-export class PlaylistController extends AppController {
+export class PlaylistController extends CoreController {
   private playlistLogic: PlaylistLogic
   constructor() {
     super()

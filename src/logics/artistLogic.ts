@@ -33,12 +33,4 @@ export class ArtistLogic {
 
     return artist as Artist
   }
-
-  // public async getFavoriteArtists(apiKey: string): Promise<Artist[]> {
-  //   return (await this.spotifyLogic.getFollowingArtists(apiKey)).map(
-  //     (artist) => {
-  //       return new Artist(artist, null)
-  //     },
-  //   )
-  // }
 }

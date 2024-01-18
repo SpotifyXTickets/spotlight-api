@@ -1,6 +1,6 @@
 import { EventRepository } from './../repositories/eventRepository'
 import { Request, Response } from 'express'
-import { AppController } from './appController'
+import { CoreController } from '../coreController'
 import TicketMasterLogic from '../logics/ticketMasterLogic'
 import { ErrorType } from '../types/errorType'
 import Event from '../models/event'
@@ -14,7 +14,7 @@ import { EventLogic } from '../logics/eventLogic'
  *   description: API operations for managing events
  */
 
-export default class EventController extends AppController {
+export default class EventController extends CoreController {
   private ticketMasterLogic: TicketMasterLogic
   private eventLogic: EventLogic
 
@@ -110,8 +110,7 @@ export default class EventController extends AppController {
     }>,
   ): Promise<void> {
     const id = req.params.id
-    const eventRepository = new EventRepository()
-    const event = await eventRepository.getEventById(id)
+    const event = await this.eventLogic.getEventById(id)
 
     if (isErrorResponse(event)) {
       res.status(404).send({

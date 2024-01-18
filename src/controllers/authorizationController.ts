@@ -1,4 +1,4 @@
-import { AppController } from './appController'
+import { CoreController } from '../coreController'
 import { Response, Request } from 'express'
 import AuthorizationLogic from '../logics/authorizationLogic'
 import { NotAuthenticated } from '../middlewares/authenticationMiddleware'
@@ -12,7 +12,7 @@ import isErrorResponse from '../helpers/isErrorResponse'
  *   description: API operations for authorization
  */
 
-export default class AuthorizationController extends AppController {
+export default class AuthorizationController extends CoreController {
   private authorizationLogic: AuthorizationLogic
   private spotifyLogic: SpotifyLogic
 

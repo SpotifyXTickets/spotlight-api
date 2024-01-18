@@ -2,10 +2,10 @@ import isErrorResponse from '../helpers/isErrorResponse'
 import { UserLogic } from '../logics/userLogic'
 import { Authenticated } from '../middlewares/authenticationMiddleware'
 import { User } from '../models/user'
-import { AppController } from './appController'
+import { CoreController } from '../coreController'
 import { Request, Response } from 'express'
 
-export class UserController extends AppController {
+export class UserController extends CoreController {
   private userLogic: UserLogic
   constructor() {
     super()

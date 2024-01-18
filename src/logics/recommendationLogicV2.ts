@@ -310,6 +310,13 @@ export default class RecommendationsLogic {
     // console.log(this.userTopArtists.id)
   }
 
+  /**
+   * Recommend an event based on the user's playlists.
+   * @param apiKey The user's Spotlight API key.
+   * @param playlistIds The user's playlist IDs.
+   * @returns An array of recommended events.
+   * @throws An error if no events are found.
+   */
   public async recommendEvent(
     apiKey: string,
     playlistIds: string[],
@@ -317,6 +324,7 @@ export default class RecommendationsLogic {
     console.log('Fetching data...')
     await this.fetchData(apiKey, playlistIds)
 
+    //TODO: Make call async independent of each others result in order to reduce load time...
     console.log('Reached layer one')
     await this.recommendEventLayerOne()
     console.log('Reached layer two')
@@ -324,6 +332,7 @@ export default class RecommendationsLogic {
     console.log('Reached layer three')
     await this.recommendEventLayerThree()
 
+    //TODO wait here for all results of the three layers to be finished so that they run async...
     // Sort the recommended events by match score
     console.log('Sorting events...')
     this.recommendedEvents.sort(this.compareByMatchScore)
