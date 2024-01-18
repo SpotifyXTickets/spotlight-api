@@ -1,5 +1,4 @@
 import jwt from 'jwt-simple'
-import { MongoClient } from 'mongodb'
 
 export default class AuthenticationRepository {
   private static fakeDatabase: {
@@ -23,7 +22,7 @@ export default class AuthenticationRepository {
       redirectUrl,
     }
   }
-  public GetSpotifyAuthState(state: string) {
+  public GetSpotifyAuthState() {
     return AuthenticationRepository.fakeDatabase.authState
   }
   public InsertSpotifyAuth(spotify: {

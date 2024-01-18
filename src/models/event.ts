@@ -1,25 +1,40 @@
-import { ObjectId } from "bson";
-import Track from "./track";
+import { ObjectId } from 'bson'
+import Track from './track'
+import Artist from './artist'
 
-export type Event = {
-  _id: ObjectId; // Will be the same as the ticketMasterId for the event.
-  ticketMasterId: string;
-  meanScore: number;
-  city: string;
-  postalCode: string;
-  country: string;
-  address: string;
-  locationLon: number;
-  locationLat: number;
-  description: string;
-  name: string;
-  imageUrl: string;
-  ticketLink: string;
-  startDate: Date;
-  endDate?: Date;
+export type EmbeddedEvent = Event & {
   _embedded?: {
-    tracks: Track[];
-  };
-};
+    tracks: Track[]
+    artists: Artist[]
+  }
+}
+export type Event = {
+  _id?: ObjectId // Will be the same as the ticketMasterId for the event.
+  meanScore: number
+  name: string
+  imageUrl: string
+  description: string
+  tickets: {
+    ticketeer: 'ticketmaster'
+    venue: {
+      city: string
+      country: string
+      address: string
+      postalCode: string
+      locationLon: number
+      locationLat: number
+    }
+    ticketId: string
+    ticketLink: string
+    eventStartDate: Date
+    eventEndData: Date
+    ticketSaleStartDate: Date
+    ticketSaleEndDate: Date
+  }[]
+  _embedded?: {
+    tracks: Track[]
+    artists: Artist[]
+  }
+}
 
-export default Event;
+export default Event

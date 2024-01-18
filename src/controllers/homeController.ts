@@ -1,9 +1,5 @@
-import { AppController } from './appController'
+import { CoreController } from '../coreController'
 import { Request, Response } from 'express'
-import {
-  Authenticated,
-  NotAuthenticated,
-} from '../middlewares/authenticationMiddleware'
 import SpotifyLogic from '../logics/spotifyLogic'
 
 /**
@@ -13,36 +9,9 @@ import SpotifyLogic from '../logics/spotifyLogic'
  *   description: Endpoints related to the home controller
  */
 
-export default class HomeController extends AppController {
+export default class HomeController extends CoreController {
   constructor() {
     super()
-
-    this.setRoutes([
-      {
-        uri: '/',
-        method: this.index,
-      },
-      {
-        uri: '/artist',
-        middlewares: [Authenticated],
-        method: this.getArtists,
-      },
-      {
-        uri: '/user',
-        middlewares: [Authenticated],
-        method: this.getUser,
-      },
-      {
-        uri: '/authorize',
-        middlewares: [NotAuthenticated],
-        method: this.authorize,
-      },
-      {
-        uri: '/playlist',
-        middlewares: [Authenticated],
-        method: this.getPlaylists,
-      },
-    ])
   }
 
   /**
@@ -83,96 +52,6 @@ export default class HomeController extends AppController {
       req.headers.authorization!.split(' ')[1],
     )
     res.status(200).send(artists)
-  }
-
-  /**
-   * @swagger
-   * path:
-   *   /user:
-   *     get:
-   *       summary: Get user information.
-   *       description: Retrieve user information.
-   *       tags: [Home]
-   *       security:
-   *         - BearerAuth: []
-   *       responses:
-   *         200:
-   *           description: User information.
-   */
-  public async getUser(req: Request, res: Response): Promise<void> {
-    function isErrorResponse(
-      data: unknown,
-    ): data is { status: number; statusText: string; message: string } {
-      if (data === null || data === undefined) {
-        return false
-      }
-      return (
-        typeof data === 'object' &&
-        'status' in data &&
-        'statusText' in data &&
-        'message' in data
-      )
-    }
-
-    const spotifyLogic = new SpotifyLogic()
-    const user = await spotifyLogic.getUser(
-      req.headers.authorization!.split(' ')[1],
-    )
-
-    if (isErrorResponse(user)) {
-      res.status(user.status).json({ error: user.message })
-      return
-    }
-    res.status(200).send(user.user)
-  }
-
-  /**
-   * @swagger
-   * path:
-   *   /authorize:
-   *     get:
-   *       summary: Authorize user.
-   *       description: Authorize user for the application.
-   *       tags: [Home]
-   *       security:
-   *         - BearerAuth: []
-   *       responses:
-   *         200:
-   *           description: Authorization response.
-   */
-  public async authorize(req: Request, res: Response): Promise<void> {
-    const spotifyLogic = new SpotifyLogic()
-    const redirectUrl = req.headers.referer ? req.headers.referer : undefined
-    await spotifyLogic.RequestAuthorization(req, res, redirectUrl)
-  }
-
-  /**
-   * @swagger
-   * path:
-   *   /playlist:
-   *     get:
-   *       summary: Get user playlists.
-   *       description: Retrieve playlists of the authenticated user.
-   *       tags: [Home]
-   *       security:
-   *         - BearerAuth: []
-   *       responses:
-   *         200:
-   *           description: A list of user playlists.
-   */
-  public async getPlaylists(req: Request, res: Response): Promise<void> {
-    const spotifyLogic = new SpotifyLogic()
-    if (req.headers.authorization === undefined) {
-      res.status(401).json({ error: 'Unauthorized' })
-      return
-    }
-    const data = await spotifyLogic.getPlaylists(
-      req.headers.authorization!.split(' ')[1],
-    )
-
-    data
-      ? res.status(200).json(data)
-      : res.status(400).json({ error: 'Something went wrong' })
   }
 }
 

@@ -1,13 +1,10 @@
-import { Db } from "mongodb";
-import { AccessToken } from "./../models/accessToken";
-import CoreRepository from "./coreRepository";
-import { ObjectId } from "bson";
-import { User } from "../models/user";
-import jwt from "jwt-simple";
+import { AccessToken } from './../models/accessToken'
+import CoreRepository from './coreRepository'
+import jwt from 'jwt-simple'
 
 export class AccessTokenRepository extends CoreRepository {
   constructor() {
-    super("accessTokens");
+    super('accessTokens')
   }
 
   async getAccessToken(AccessToken: string): Promise<AccessToken | null> {
@@ -15,25 +12,25 @@ export class AccessTokenRepository extends CoreRepository {
       await this.collection
     ).findOne({
       accessToken: AccessToken,
-    })) as AccessToken | null;
+    })) as AccessToken | null
   }
 
   async getAccessTokenByRefreshToken(
-    refreshToken: string
+    refreshToken: string,
   ): Promise<AccessToken | null> {
     const token = (await (
       await this.collection
     ).findOne({
       refreshToken: refreshToken,
-    })) as AccessToken | null;
+    })) as AccessToken | null
 
-    return token;
+    return token
   }
 
   async createAccessToken(
     spotifyAccessToken: string,
     expiresIn: number,
-    refresh_token: string
+    refresh_token: string,
   ): Promise<string | boolean> {
     const token = jwt.encode(
       {
@@ -41,8 +38,8 @@ export class AccessTokenRepository extends CoreRepository {
         expiresIn: expiresIn,
         createdAt: new Date(),
       },
-      process.env.JWT_SECRET_KEY ?? "supersecretkey"
-    );
+      process.env.JWT_SECRET_KEY ?? 'supersecretkey',
+    )
     const accessToken = {
       accessToken: token,
       spotifyAccessToken: spotifyAccessToken,
@@ -50,9 +47,9 @@ export class AccessTokenRepository extends CoreRepository {
       updatedAt: new Date(),
       expiresIn: expiresIn,
       refreshToken: refresh_token,
-    } as AccessToken;
-    const result = await (await this.collection).insertOne(accessToken);
-    return result.acknowledged ? token : false;
+    } as AccessToken
+    const result = await (await this.collection).insertOne(accessToken)
+    return result.acknowledged ? token : false
   }
 
   async updateAccessToken(accessToken: AccessToken): Promise<boolean | string> {
@@ -62,8 +59,8 @@ export class AccessTokenRepository extends CoreRepository {
         expiresIn: accessToken.expiresIn,
         refreshToken: accessToken.refreshToken,
       },
-      process.env.JWT_SECRET_KEY ?? "supersecretkey"
-    );
+      process.env.JWT_SECRET_KEY ?? 'supersecretkey',
+    )
     const result = await (
       await this.collection
     ).updateOne(
@@ -76,10 +73,10 @@ export class AccessTokenRepository extends CoreRepository {
           expiresIn: accessToken.expiresIn,
           updatedAt: new Date(),
         },
-      }
-    );
+      },
+    )
 
-    return result.acknowledged ? token : false;
+    return result.acknowledged ? token : false
   }
 
   // Add your methods for communicating with MongoDB here

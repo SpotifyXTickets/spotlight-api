@@ -55,15 +55,6 @@ app.listen(PORT, async () => {
   const client = new MongoClient(uri as string)
   try {
     await client.connect()
-    const databasesList = await client.db().admin().listDatabases()
-
-    console.log('Databases:')
-    databasesList.databases.forEach((db) => console.log(` - ${db.name}`))
-    await client.db('Citric').collection('Users').insertOne({
-      name: 'test',
-      email: 'test',
-      password: 'test',
-    })
   } catch (error) {
     console.error(error)
   } finally {

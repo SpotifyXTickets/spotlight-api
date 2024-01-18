@@ -1,206 +1,207 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type TicketMasterEventType = {
   classifications: Array<{
-    family: boolean;
+    family: boolean
     genre: {
-      id: string;
-      name: string;
-    };
-    primary: boolean;
+      id: string
+      name: string
+    }
+    primary: boolean
     segment: {
-      id: string;
-      name: string;
-    };
+      id: string
+      name: string
+    }
     subGenre: {
-      id: string;
-      name: string;
-    };
-  }>;
+      id: string
+      name: string
+    }
+  }>
   dates: {
-    spanMultipleDays: boolean;
+    spanMultipleDays: boolean
     start: {
-      dateTBA: boolean;
-      dateTBD: boolean;
-      localDate: string;
-      dateTime: string;
-      noSpecificTime: boolean;
-      timeTBA: boolean;
-    };
-    end: {
-      localDate: string;
-      dateTime: string;
-      noSpecificTime: boolean;
-      timeTBA: boolean;
-    };
+      dateTBA: boolean
+      dateTBD: boolean
+      localDate: string
+      dateTime: string
+      noSpecificTime: boolean
+      timeTBA: boolean
+    }
+    end?: {
+      localDate: string
+      dateTime: string
+      noSpecificTime: boolean
+      timeTBA: boolean
+    }
     status: {
-      code: string;
-    };
-    timezone: string;
-  };
-  id: string;
+      code: string
+    }
+    timezone: string
+  }
+  id: string
   images: Array<{
-    fallback: boolean;
-    height: number;
-    width: number;
-    ratio: string;
-    url: string;
-  }>;
-  locale: string;
-  name: string;
-  description: string;
+    fallback: boolean
+    height: number
+    width: number
+    ratio: string
+    url: string
+  }>
+  locale: string
+  name: string
+  description: string
   priceRange: {
-    type: string;
-    currency: string;
-    max: number;
-    min: number;
-  };
+    type: string
+    currency: string
+    max: number
+    min: number
+  }
   promoter: {
-    id: string;
-    name: string;
-  };
+    id: string
+    name: string
+  }
   promoters: Array<{
-    id: string;
-    name: string;
-  }>;
+    id: string
+    name: string
+  }>
   sales: {
     public: {
-      startDateTime: string;
-      endDateTime: string;
-      startTBA: boolean;
-      startTBD: boolean;
-    };
-  };
+      startDateTime: string
+      endDateTime: string
+      startTBA: boolean
+      startTBD: boolean
+    }
+  }
   seatmap: {
-    staticUrl: string;
-  };
-  test: boolean;
-  type: string;
-  url: string;
+    staticUrl: string
+  }
+  test: boolean
+  type: string
+  url: string
   _embedded: {
-    venues: Array<TicketMasterVenueType>;
-    attractions: Array<TicketMasterArtistType>;
-  };
-};
+    venues: Array<TicketMasterVenueType>
+    attractions: Array<TicketMasterArtistType>
+  }
+}
 
 export type TicketMasterVenueType = {
-  distance: number;
-  units: string;
-  id: string;
-  locale: string;
-  name: string;
-  description: string;
+  distance: number
+  units: string
+  id: string
+  locale: string
+  name: string
+  description: string
   address: {
-    line1: string;
-    line2: string;
-    line3: string;
-  };
+    line1: string
+    line2: string
+    line3: string
+  }
   city: {
-    name: string;
-  };
+    name: string
+  }
   country: {
-    countryCode: string;
-    name: string;
-  };
-  url: string;
-  postalCode: string;
+    countryCode: string
+    name: string
+  }
+  url: string
+  postalCode: string
   location: {
-    longitude: number;
-    latitude: number;
-  };
-};
+    longitude: number
+    latitude: number
+  }
+}
 
 export type TicketMasterArtistType = {
-  id: string;
-  name: string;
-  locale: string;
-  desription: string;
-  additionalInfo: string;
-  url: string;
+  id: string
+  name: string
+  locale: string
+  desription: string
+  additionalInfo: string
+  url: string
   images: Array<{
-    url: string;
-    ratio: "16_9" | "3_2" | "4_3";
-    width: number;
-    height: number;
-    fallback: boolean;
-    attribution: string;
-  }>;
+    url: string
+    ratio: '16_9' | '3_2' | '4_3'
+    width: number
+    height: number
+    fallback: boolean
+    attribution: string
+  }>
   externalLinks: {
     youtube?: Array<{
-      url: string;
-    }>;
+      url: string
+    }>
     twitter?: Array<{
-      url: string;
-    }>;
+      url: string
+    }>
     facebook?: Array<{
-      url: string;
-    }>;
+      url: string
+    }>
     instagram?: Array<{
-      url: string;
-    }>;
+      url: string
+    }>
     spotify?: Array<{
-      url: string;
-    }>;
+      url: string
+    }>
     itunes?: Array<{
-      url: string;
-    }>;
+      url: string
+    }>
     lastfm?: Array<{
-      url: string;
-    }>;
+      url: string
+    }>
     wiki?: Array<{
-      url: string;
-    }>;
+      url: string
+    }>
     homepage?: Array<{
-      url: string;
-    }>;
+      url: string
+    }>
     musicBrainz?: Array<{
-      url: string;
-    }>;
+      url: string
+    }>
     upcomingEvents: {
-      _total: number;
-      _filtered: number;
-      universe: number;
-      mfxNl: number;
-      tmr: number;
-      ticketmaster: number;
-    };
-  };
-};
+      _total: number
+      _filtered: number
+      universe: number
+      mfxNl: number
+      tmr: number
+      ticketmaster: number
+    }
+  }
+}
 
 export type TicketMasterEventResponse = {
   _embedded: {
-    events?: TicketMasterEventType[];
-  };
+    events?: TicketMasterEventType[]
+  }
   _links: {
     self: {
-      href: string;
-    };
+      href: string
+    }
     first: {
-      href: string;
-    };
+      href: string
+    }
     last: {
-      href: string;
-    };
+      href: string
+    }
     next: {
-      href: string;
-    };
-  };
-};
+      href: string
+    }
+  }
+}
 
 export type TicketMasterClassificationResponse = {
   _embedded: {
-    classifications: any[];
-  };
+    classifications: unknown[]
+  }
   _links: {
     self: {
-      href: string;
-    };
+      href: string
+    }
     first: {
-      href: string;
-    };
+      href: string
+    }
     last: {
-      href: string;
-    };
+      href: string
+    }
     next: {
-      href: string;
-    };
-  };
-};
+      href: string
+    }
+  }
+}

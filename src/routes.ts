@@ -1,41 +1,99 @@
-import express from 'express'
+import express, { NextFunction, Router, Request, Response } from 'express'
 import AuthController from './controllers/authorizationController'
 import asyncify from 'express-asyncify'
 import HomeController from './controllers/homeController'
 import EventController from './controllers/eventController'
 import RecommendationController from './controllers/recommendationController'
+import RecommendationControllerV2 from './controllers/recommendationControllerV2'
 import swaggerUi from 'swagger-ui-express' // Import Swagger UI package
 import swaggerJsdoc from 'swagger-jsdoc'
+import SettingController from './controllers/settingController'
+import UserController from './controllers/userController'
+import PlaylistController from './controllers/playlistController'
+import { ArtistController } from './controllers/artistController'
+
+function setRouterRoutes(
+  router: Router,
+  baseUri: string = '',
+  routes: Array<{
+    uri: string
+    HttpMethod?: string
+    middlewares?: Array<
+      (req: Request, res: Response, next: NextFunction) => void
+    >
+    method: (req: Request, res: Response) => void
+  }>,
+): void {
+  routes
+    .sort((a, b) => {
+      if (a.uri.includes(':') && !b.uri.includes(':')) {
+        return 1
+      } else if (!a.uri.includes(':') && b.uri.includes(':')) {
+        return -1
+      } else {
+        return 0
+      }
+    })
+    .forEach((route) => {
+      switch (route.HttpMethod ? route.HttpMethod.toUpperCase() : undefined) {
+        case 'GET':
+          router.get(baseUri + route.uri, route.middlewares ?? [], route.method)
+          break
+        case 'POST':
+          router.post(
+            baseUri + route.uri,
+            route.middlewares ?? [],
+            route.method,
+          )
+          break
+        case 'PUT':
+          router.put(baseUri + route.uri, route.middlewares ?? [], route.method)
+          break
+        case 'DELETE':
+          router.delete(
+            baseUri + route.uri,
+            route.middlewares ?? [],
+            route.method,
+          )
+          break
+        default:
+          router.get(baseUri + route.uri, route.middlewares ?? [], route.method)
+          break
+      }
+    })
+}
 
 const router = asyncify(express.Router())
-
 const authController = new AuthController()
-const authRoutes = authController.getRoutes()
-
-authRoutes.forEach((route) => {
-  router.get('/authorize' + route.uri, route.middlewares ?? [], route.method)
-})
+setRouterRoutes(router, '/authorize', authController.getRoutes())
 
 const homeController = new HomeController()
-const homeRoutes = homeController.getRoutes()
-
-homeRoutes.forEach((route) => {
-  router.get(route.uri, route.middlewares ?? [], route.method)
-})
+setRouterRoutes(router, '', homeController.getRoutes())
 
 const eventController = new EventController()
-const eventRoutes = eventController.getRoutes()
-
-eventRoutes.forEach((route) => {
-  router.get('/events' + route.uri, route.middlewares ?? [], route.method)
-})
+setRouterRoutes(router, '/event', eventController.getRoutes())
 
 const recommendationController = new RecommendationController()
-const recommendationRoutes = recommendationController.getRoutes()
+setRouterRoutes(router, '/recommendation', recommendationController.getRoutes())
 
-recommendationRoutes.forEach((route) => {
+const settingController = new SettingController()
+setRouterRoutes(router, '/setting', settingController.getRoutes())
+
+const userController = new UserController()
+setRouterRoutes(router, '/user', userController.getRoutes())
+
+const playListController = new PlaylistController()
+setRouterRoutes(router, '/playlist', playListController.getRoutes())
+
+const artistController = new ArtistController()
+setRouterRoutes(router, '/artist', artistController.getRoutes())
+
+const recommendationControllerV2 = new RecommendationControllerV2()
+const recommendationV2Routes = recommendationControllerV2.getRoutes()
+
+recommendationV2Routes.forEach((route) => {
   router.get(
-    '/recommendations' + route.uri,
+    '/recommendationsv2' + route.uri,
     route.middlewares ?? [],
     route.method,
   )
@@ -52,7 +110,7 @@ const swaggerOptions: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000', // Specify the server URL where your API is hosted
+        url: 'http://localhost:8000', // Specify the server URL where your API is hosted
       },
     ],
   },
