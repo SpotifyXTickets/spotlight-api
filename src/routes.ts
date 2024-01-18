@@ -4,7 +4,6 @@ import asyncify from 'express-asyncify'
 import HomeController from './controllers/homeController'
 import EventController from './controllers/eventController'
 import RecommendationController from './controllers/recommendationController'
-import RecommendationControllerV2 from './controllers/recommendationControllerV2'
 import swaggerUi from 'swagger-ui-express' // Import Swagger UI package
 import swaggerJsdoc from 'swagger-jsdoc'
 import SettingController from './controllers/settingController'
@@ -87,17 +86,6 @@ setRouterRoutes(router, '/playlist', playListController.getRoutes())
 
 const artistController = new ArtistController()
 setRouterRoutes(router, '/artist', artistController.getRoutes())
-
-const recommendationControllerV2 = new RecommendationControllerV2()
-const recommendationV2Routes = recommendationControllerV2.getRoutes()
-
-recommendationV2Routes.forEach((route) => {
-  router.get(
-    '/recommendationsv2' + route.uri,
-    route.middlewares ?? [],
-    route.method,
-  )
-})
 
 // Swagger options specifying API metadata and server details
 const swaggerOptions: swaggerJsdoc.Options = {
