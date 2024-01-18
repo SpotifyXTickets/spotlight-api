@@ -1,15 +1,16 @@
 import { Request, Response } from 'express'
 import { CoreController } from '../coreController'
-import RecommendationsLogic from '../logics/recommendationsLogic'
+import RecommendationsLogic from '../logics/recommendationLogic'
 import { Authenticated } from '../middlewares/authenticationMiddleware'
 
 /**
  * @swagger
  * tags:
- *   name: Recommendations
- *   description: Endpoints related to recommendations
+ *   name: RecommendationsV2
+ *   description: Endpoints related to version 2 of recommendations
  */
 
+export const maxDuration = 30
 export default class RecommendationController extends CoreController {
   constructor() {
     super()
@@ -18,18 +19,18 @@ export default class RecommendationController extends CoreController {
       {
         uri: '/',
         middlewares: [Authenticated],
-        method: this.recommendEvent.bind(this),
+        method: this.recommendEvent,
       },
     ])
   }
 
   /**
    * @swagger
-   * /recommendations:
+   * /recommendations-v2:
    *   get:
-   *     summary: Get recommended events.
-   *     description: Retrieve recommended events based on user preferences and playlist selection.
-   *     tags: [Recommendations]
+   *     summary: Get recommended events (Version 2).
+   *     description: Retrieve recommended events based on user preferences and playlist selection (Version 2).
+   *     tags: [RecommendationsV2]
    *     security:
    *       - BearerAuth: []
    *     parameters:
@@ -47,7 +48,7 @@ export default class RecommendationController extends CoreController {
    *             schema:
    *               type: array
    *               items:
-   *                 $ref: '#/components/schemas/Recommend'
+   *                 $ref: '#/components/schemas/Recommend2'
    *       401:
    *         description: Unauthorized.
    */
@@ -60,8 +61,6 @@ export default class RecommendationController extends CoreController {
     const playlistIds = req.query.playlistIds
       ? (req.query.playlistIds as string).split(',')
       : []
-
-    // Test data
     // Data order should be [Danceability, Energy, Loudness, Speechiness, Acousticness, Instrumentalness, Liveness, Valence, Tempo]
     // All data should be scaled down to a value between 0 and 1
 
@@ -72,24 +71,7 @@ export default class RecommendationController extends CoreController {
       playlistIds,
     )
 
-    res.send(events.slice(0, 10))
-    // var playlist = [
-    //   0.633, 0.162, 0.104, 0.475, 0.923, 0.933, 0.252, 0.195, 0.726,
-    // ];
-    // var events: { [key: string]: number[] } = {
-    //   event1: [0.123, 0.456, 0.789, 0.321, 0.654, 0.987, 0.135, 0.468, 0.791],
-    //   event2: [0.246, 0.579, 0.802, 0.135, 0.468, 0.791, 0.024, 0.357, 0.68],
-    //   event3: [0.369, 0.702, 0.925, 0.258, 0.591, 0.814, 0.147, 0.48, 0.703],
-    //   event4: [0.492, 0.825, 0.158, 0.381, 0.714, 0.937, 0.27, 0.603, 0.826],
-    //   event5: [0.615, 0.948, 0.271, 0.604, 0.937, 0.16, 0.493, 0.826, 0.159],
-    // };
-
-    // const recommendationsLogic = new RecommendationsLogic(playlist, events);
-
-    // res.send(
-    //   "Recommendation page " +
-    //     JSON.stringify(await recommendationsLogic.recommendEvent())
-    // );
+    res.send(events.slice(0, 30))
   }
 }
 
