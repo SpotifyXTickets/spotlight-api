@@ -1,4 +1,4 @@
-import { DB } from '../db/db'
+import { DB } from '../db'
 import isErrorResponse from '../helpers/isErrorResponse'
 import SpotifyLogic from '../logics/spotifyLogic'
 import { EmbeddedArtist } from '../models/artist'

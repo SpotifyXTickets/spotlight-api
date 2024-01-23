@@ -1,4 +1,4 @@
-import { DB } from '../db/db'
+import { DB } from '../db'
 import TicketMasterLogic from '../logics/ticketMasterLogic'
 import { EmbeddedEvent } from '../models/event'
 import { EventRepository } from '../repositories/eventRepository'

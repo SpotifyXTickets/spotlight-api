@@ -1,5 +1,5 @@
 import { Collection, Db } from 'mongodb'
-import { DB } from '../db/db'
+import { DB } from '../db'
 import SpotifyLogic from '../logics/spotifyLogic'
 import { Server } from 'http'
 import express, { Application, Request, Response } from 'express'

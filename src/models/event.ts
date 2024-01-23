@@ -31,10 +31,6 @@ export type Event = {
     ticketSaleStartDate: Date
     ticketSaleEndDate: Date
   }[]
-  _embedded?: {
-    tracks: Track[]
-    artists: Artist[]
-  }
 }
 
 export default Event

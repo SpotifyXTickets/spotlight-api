@@ -1,5 +1,5 @@
 import { EventRepository } from './../repositories/eventRepository'
-import { DB } from '../db/db'
+import { DB } from '../db'
 import { Event } from '../models/event'
 import { obtainBackendToken } from './createBackendToken'
 import { importArtistsFromSpotify } from './importArtists'

@@ -1,7 +1,6 @@
 import express, { NextFunction, Router, Request, Response } from 'express'
 import AuthController from './controllers/authorizationController'
 import asyncify from 'express-asyncify'
-import HomeController from './controllers/homeController'
 import EventController from './controllers/eventController'
 import RecommendationController from './controllers/recommendationController'
 import swaggerUi from 'swagger-ui-express' // Import Swagger UI package
@@ -65,9 +64,6 @@ function setRouterRoutes(
 const router = asyncify(express.Router())
 const authController = new AuthController()
 setRouterRoutes(router, '/authorize', authController.getRoutes())
-
-const homeController = new HomeController()
-setRouterRoutes(router, '', homeController.getRoutes())
 
 const eventController = new EventController()
 setRouterRoutes(router, '/event', eventController.getRoutes())

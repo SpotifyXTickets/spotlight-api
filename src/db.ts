@@ -5,7 +5,11 @@ export class DB {
   private static client: Promise<MongoClient>
   private static db: Promise<Db>
 
-  public static async connect(): Promise<void> {
+  public static async disconnect(): Promise<void> {
+    await this.client.then((client) => client.close())
+  }
+
+  public static async connect(): Promise<boolean> {
     this.db = new Promise<Db>(async (resolve, reject) => {
       try {
         const client = new MongoClient(
@@ -26,6 +30,18 @@ export class DB {
         reject(e)
       }
     })
+
+    const connectionResult = new Promise<boolean>(async (resolve, reject) => {
+      try {
+        await this.db
+        await this.client
+        resolve(true)
+      } catch (e) {
+        reject(e)
+      }
+    })
+
+    return connectionResult
   }
 
   public static async getClient(): Promise<MongoClient> {

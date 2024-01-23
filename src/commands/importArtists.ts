@@ -11,7 +11,7 @@ import {
 } from '../transformers/artistTransformers'
 import { SpotifyArtistType } from '../types/spotifyTypes'
 import { EmbeddedArtist } from '../models/artist'
-import { DB } from '../db/db'
+import { DB } from '../db'
 import { obtainBackendToken } from './createBackendToken'
 import { EventRepository } from '../repositories/eventRepository'
 import isErrorResponse from '../helpers/isErrorResponse'
@@ -132,13 +132,12 @@ export async function importArtistsFromSpotify(
       // artist._embedded?.events?.push(transformEmbeddedEventToEvent(event))
     }
 
-    const eventsToUpdate = eventWithArtists.map((ea) => {
-      return transformEmbeddedEventToEvent(ea.embeddedEvent)
-    })
-
     const artistsToUpdate: EmbeddedArtist[] = []
+    const eventsToUpdate: EmbeddedEvent[] = []
 
-    for (const e of eventsToUpdate) {
+    for (const e of eventWithArtists.map((ea) => {
+      return ea.embeddedEvent
+    })) {
       const dbe = eventWithArtists.find((ea) => {
         return ea.embeddedEvent._id === e._id
       })
@@ -171,6 +170,7 @@ export async function importArtistsFromSpotify(
         ...a.map((a) => transformEmbeddedArtistToArtist(a)),
       )
 
+      eventsToUpdate.push(e)
       const artistIndex = artistsToUpdate.findIndex(
         (au) =>
           a.find((adb) => {

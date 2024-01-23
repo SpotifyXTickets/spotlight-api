@@ -1,7 +1,7 @@
 import { EventRepository } from './../repositories/eventRepository'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import { importTMEvents } from './importEvents'
-import { DB } from '../db/db'
+import { DB } from '../db'
 
 let mongoMemoryServer: MongoMemoryServer
 beforeAll(async () => {

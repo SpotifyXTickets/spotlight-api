@@ -7,7 +7,7 @@ import cors from 'cors'
 import swaggerUi from 'swagger-ui-express'
 import swaggerDocs from './docs' // Adjust the path as per our project structure
 import routes from './routes'
-import { DB } from './db/db'
+import { DB } from './db'
 dotenv.config()
 
 const app: Application = express()
@@ -61,3 +61,5 @@ app.listen(PORT, async () => {
     await client.close()
   }
 })
+
+export default app

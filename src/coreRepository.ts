@@ -1,6 +1,6 @@
 /* eslint-disable no-async-promise-executor */
 import { Db, Collection } from 'mongodb'
-import { DB } from '../db/db'
+import { DB } from './db'
 
 export abstract class CoreRepository {
   protected db: Promise<Db>
