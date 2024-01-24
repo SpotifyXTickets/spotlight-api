@@ -51,6 +51,7 @@ DB.connect()
 
 app.listen(PORT, async () => {
   console.log(`Server is running on PORT http://localhost:${PORT}/`)
+  console.log(process.env)
   const uri = process.env.MONGODB_URL
   console.log(uri)
   const client = new MongoClient(uri as string)
