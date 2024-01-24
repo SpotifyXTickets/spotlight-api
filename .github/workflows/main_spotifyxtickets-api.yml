@@ -30,7 +30,7 @@ jobs:
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_8c1eec8fbaf547ca9e2463f781116303 }}/3739323298328/spotify-api:${{ github.sha }}
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/spotify-apid:latest,${{ secrets.DOCKER_HUB_USERNAME }}/spotify-api:${{  github.ref_name }}
         file: ./Dockerfile
 
   deploy:
