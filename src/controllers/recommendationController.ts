@@ -71,7 +71,7 @@ export default class RecommendationController extends CoreController {
       playlistIds,
     )
 
-    res.send(events.slice(0, 30))
+    res.send(events)
   }
 }
 
