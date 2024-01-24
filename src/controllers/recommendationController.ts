@@ -71,6 +71,8 @@ export default class RecommendationController extends CoreController {
       playlistIds,
     )
 
+    console.log("user's recommended events: ", events)
+
     res.send(events)
   }
 }
