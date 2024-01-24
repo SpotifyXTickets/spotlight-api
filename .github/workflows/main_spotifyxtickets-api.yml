@@ -23,14 +23,14 @@ jobs:
       uses: docker/login-action@v2
       with:
         registry: https://index.docker.io/v1/
-        username: ${{ secrets.AzureAppService_ContainerUsername_77d8505be8214e199223b48f912d963e }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_31121931ba834208858c4f4b3b4fe320 }}
+        username: ${{ secrets.AzureAppService_ContainerUsername_8c1eec8fbaf547ca9e2463f781116303 }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_ebf504175cb24f41a3d345c89c3e72a4 }}
 
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_77d8505be8214e199223b48f912d963e }}/3739323298328/spotify-api:${{ github.sha }}
+        tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_8c1eec8fbaf547ca9e2463f781116303 }}/3739323298328/spotify-api:${{ github.sha }}
         file: ./Dockerfile
 
   deploy:
@@ -47,5 +47,5 @@ jobs:
       with:
         app-name: 'spotifyxtickets-api'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_aabaaee117b54d69b8de471ea052349f }}
-        images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_77d8505be8214e199223b48f912d963e }}/3739323298328/spotify-api:${{ github.sha }}'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_2bf86f8ad91a4e01ad45902a1b924359 }}
+        images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_8c1eec8fbaf547ca9e2463f781116303 }}/3739323298328/spotify-api:${{ github.sha }}'
