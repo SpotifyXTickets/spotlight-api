@@ -1,7 +1,10 @@
 import { AccessToken } from './../models/accessToken'
 import CoreRepository from '../coreRepository'
 import jwt from 'jwt-simple'
+import 'reflect-metadata'
+import { Service } from 'typedi'
 
+@Service()
 export class AccessTokenRepository extends CoreRepository {
   constructor() {
     super('accessTokens')

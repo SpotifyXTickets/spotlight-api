@@ -3,7 +3,10 @@ import isErrorResponse from '../helpers/isErrorResponse'
 import Event, { EmbeddedEvent } from '../models/event'
 import { ErrorType } from '../types/errorType'
 import CoreRepository from '../coreRepository'
+import 'reflect-metadata'
+import { Service } from 'typedi'
 
+@Service()
 export class EventRepository extends CoreRepository {
   constructor() {
     super('events')

@@ -1,7 +1,10 @@
 import { ObjectId } from 'bson'
 import { EmbeddedArtist } from '../models/artist'
 import CoreRepository from '../coreRepository'
+import 'reflect-metadata'
+import { Service } from 'typedi'
 
+@Service()
 export class ArtistRepository extends CoreRepository {
   constructor() {
     super('artists', ['spotifyId', 'ticketMasterId'])

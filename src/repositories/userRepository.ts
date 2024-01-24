@@ -1,7 +1,10 @@
 import { ObjectId } from 'mongodb'
 import CoreRepository from '../coreRepository'
 import { User } from '../models/user'
+import 'reflect-metadata'
+import { Service } from 'typedi'
 
+@Service()
 export class UserRepository extends CoreRepository {
   constructor() {
     super('users')

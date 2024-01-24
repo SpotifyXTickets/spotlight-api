@@ -1,5 +1,8 @@
 import jwt from 'jwt-simple'
+import 'reflect-metadata'
+import { Service } from 'typedi'
 
+@Service()
 export default class AuthenticationRepository {
   private static fakeDatabase: {
     auth: Array<{

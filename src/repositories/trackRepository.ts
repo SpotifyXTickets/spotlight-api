@@ -1,7 +1,10 @@
 import { ObjectId } from 'mongodb'
 import Track from '../models/track'
 import CoreRepository from '../coreRepository'
+import 'reflect-metadata'
+import { Service } from 'typedi'
 
+@Service()
 export class TrackRepository extends CoreRepository {
   constructor() {
     super('tracks', ['spotifyId'])

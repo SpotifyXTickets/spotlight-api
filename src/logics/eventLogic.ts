@@ -1,11 +1,14 @@
+import Container, { Service } from 'typedi'
 import { EmbeddedEvent } from '../models/event'
 import { EventRepository } from '../repositories/eventRepository'
 import { ErrorType } from '../types/errorType'
+import 'reflect-metadata'
 
+@Service()
 export class EventLogic {
   private eventRepository: EventRepository
   constructor() {
-    this.eventRepository = new EventRepository()
+    this.eventRepository = Container.get(EventRepository)
   }
 
   public async getEvents(): Promise<EmbeddedEvent[]> {

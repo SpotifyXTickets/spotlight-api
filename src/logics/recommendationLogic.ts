@@ -12,7 +12,10 @@ import {
 import SpotifyLogic from './spotifyLogic'
 import Event, { EmbeddedEvent } from '../models/event'
 import { transformSpotifyToTrack } from '../transformers/trackTransformers'
+import { Service } from 'typedi'
+import 'reflect-metadata'
 
+@Service()
 export default class RecommendationsLogic {
   // Define empty data variables
   events: EmbeddedEvent[] = []

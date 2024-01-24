@@ -12,19 +12,23 @@ import {
 } from '../types/spotifyTypes'
 import logger from '../logger'
 import { ErrorType } from '../types/errorType'
+import 'reflect-metadata'
+import Container, { Service } from 'typedi'
 
+@Service()
 export default class SpotifyLogic {
   private authenticationRepository: AuthenticationRepository
+  private accessTokenRepository: AccessTokenRepository
   private apiHost: string
   constructor() {
-    this.authenticationRepository = new AuthenticationRepository()
+    this.authenticationRepository = Container.get(AuthenticationRepository)
+    this.accessTokenRepository = Container.get(AccessTokenRepository)
     this.apiHost = process.env.FRONTEND_ORIGIN || 'http://localhost:3000/'
   }
   public async checkAuthorization(
     accessToken: string,
   ): Promise<boolean | string> {
-    const accessTokenRepository = new AccessTokenRepository()
-    const token = await accessTokenRepository.getAccessToken(accessToken)
+    const token = await this.accessTokenRepository.getAccessToken(accessToken)
     if (token) {
       if (token.updatedAt < new Date(Date.now() - 1000 * token.expiresIn)) {
         console.log('refresh')
@@ -48,8 +52,7 @@ export default class SpotifyLogic {
     accessToken: string
     refreshToken: string
   }): Promise<string | boolean> {
-    const accessTokenRepository = new AccessTokenRepository()
-    const oldToken = accessTokenRepository.getAccessTokenByRefreshToken(
+    const oldToken = this.accessTokenRepository.getAccessTokenByRefreshToken(
       auth.refreshToken,
     )
     const newToken = await axios
@@ -76,7 +79,7 @@ export default class SpotifyLogic {
       )
       .then(async (response) => {
         const token = await oldToken
-        return await accessTokenRepository.updateAccessToken({
+        return await this.accessTokenRepository.updateAccessToken({
           ...token,
           spotifyAccessToken: response.data.access_token,
         } as AccessToken)
@@ -120,8 +123,6 @@ export default class SpotifyLogic {
     refreshToken: string
     error?: string
   }> {
-    const accessTokenRepository = new AccessTokenRepository()
-    console.log(redirectUri)
     const token = await axios
       .post(
         'https://accounts.spotify.com/api/token',
@@ -145,7 +146,7 @@ export default class SpotifyLogic {
         // console.log(user);
 
         if (redirectUri === undefined) {
-          const token = await accessTokenRepository.createAccessToken(
+          const token = await this.accessTokenRepository.createAccessToken(
             response.data.access_token,
             response.data.expires_in,
             response.data.refresh_token,
@@ -159,7 +160,7 @@ export default class SpotifyLogic {
           }
         }
 
-        const token = await accessTokenRepository.createAccessToken(
+        const token = await this.accessTokenRepository.createAccessToken(
           response.data.access_token,
           response.data.expires_in,
           response.data.refresh_token,
@@ -199,8 +200,7 @@ export default class SpotifyLogic {
   }
 
   public async getUser(apiKey: string) {
-    const accessTokenRepository = new AccessTokenRepository()
-    const accessToken = await accessTokenRepository.getAccessToken(apiKey)
+    const accessToken = await this.accessTokenRepository.getAccessToken(apiKey)
     if (accessToken) {
       const data = await axios
         .get('https://api.spotify.com/v1/me', {
@@ -236,8 +236,7 @@ export default class SpotifyLogic {
   public async getPlaylists(
     apiKey: string,
   ): Promise<SpotifyPlaylistType[] | boolean> {
-    const accessTokenRepository = new AccessTokenRepository()
-    const accessToken = await accessTokenRepository.getAccessToken(apiKey)
+    const accessToken = await this.accessTokenRepository.getAccessToken(apiKey)
     if (accessToken) {
       return await axios
         .get('https://api.spotify.com/v1/me/playlists', {
@@ -256,8 +255,7 @@ export default class SpotifyLogic {
     return false
   }
   public async getPlaylistTracks(apiKey: string, playlistId: string) {
-    const accessTokenRepository = new AccessTokenRepository()
-    const accessToken = await accessTokenRepository.getAccessToken(apiKey)
+    const accessToken = await this.accessTokenRepository.getAccessToken(apiKey)
     if (accessToken) {
       return await axios
         .get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
@@ -298,8 +296,7 @@ export default class SpotifyLogic {
     apiKey: string,
     artistIds: string[],
   ): Promise<SpotifyArtistType[] | boolean> {
-    const accessTokenRepository = new AccessTokenRepository()
-    const accessToken = await accessTokenRepository.getAccessToken(apiKey)
+    const accessToken = await this.accessTokenRepository.getAccessToken(apiKey)
     if (accessToken) {
       return await axios
         .get(`https://api.spotify.com/v1/artists?ids=${artistIds.toString()}`, {
@@ -325,8 +322,7 @@ export default class SpotifyLogic {
   }
 
   public async getUserTopArtists(apiKey: string): Promise<SpotifyArtistType[]> {
-    const accessTokenRepository = new AccessTokenRepository()
-    const accessToken = await accessTokenRepository.getAccessToken(apiKey)
+    const accessToken = await this.accessTokenRepository.getAccessToken(apiKey)
     if (accessToken) {
       return await axios
         .get('https://api.spotify.com/v1/me/top/artists', {
@@ -358,8 +354,7 @@ export default class SpotifyLogic {
     apiKey: string,
     artistId: string,
   ): Promise<SpotifyTopTrackType[] | ErrorType> {
-    const accessTokenRepository = new AccessTokenRepository()
-    const accessToken = await accessTokenRepository.getAccessToken(apiKey)
+    const accessToken = await this.accessTokenRepository.getAccessToken(apiKey)
     if (accessToken) {
       return await axios
         .get(
@@ -393,8 +388,7 @@ export default class SpotifyLogic {
     apiKey: string,
     trackIds: string[],
   ): Promise<SpotifyAudioFeaturesType[]> {
-    const accessTokenRepository = new AccessTokenRepository()
-    const accessToken = await accessTokenRepository.getAccessToken(apiKey)
+    const accessToken = await this.accessTokenRepository.getAccessToken(apiKey)
     return await axios
       .get(
         `https://api.spotify.com/v1/audio-features?ids=${trackIds.toString()}`,

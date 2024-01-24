@@ -8,6 +8,7 @@ import swaggerUi from 'swagger-ui-express'
 import swaggerDocs from './docs' // Adjust the path as per our project structure
 import routes from './routes'
 import { DB } from './db'
+import 'reflect-metadata'
 dotenv.config()
 
 const app: Application = express()

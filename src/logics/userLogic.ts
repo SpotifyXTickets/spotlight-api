@@ -2,14 +2,17 @@ import { UserRepository } from './../repositories/userRepository'
 import { User } from '../models/user'
 import { ErrorType } from '../types/errorType'
 import SpotifyLogic from './spotifyLogic'
+import 'reflect-metadata'
+import Container, { Service } from 'typedi'
 
+@Service()
 export class UserLogic {
   private spotifyLogic: SpotifyLogic
   private userRepository: UserRepository
 
   constructor() {
-    this.spotifyLogic = new SpotifyLogic()
-    this.userRepository = new UserRepository()
+    this.spotifyLogic = Container.get(SpotifyLogic)
+    this.userRepository = Container.get(UserRepository)
   }
 
   async addUser(user: User): Promise<User | ErrorType> {

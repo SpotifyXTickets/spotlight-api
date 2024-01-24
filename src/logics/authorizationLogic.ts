@@ -1,11 +1,14 @@
+import Container, { Service } from 'typedi'
 import SpotifyLogic from './spotifyLogic'
+import 'reflect-metadata'
 import { Response, Request } from 'express'
 
+@Service()
 export default class AuthorizationLogic {
   private spotifyLogic: SpotifyLogic
 
   constructor() {
-    this.spotifyLogic = new SpotifyLogic()
+    this.spotifyLogic = Container.get(SpotifyLogic)
   }
 
   public async AuthorizeSpotify(

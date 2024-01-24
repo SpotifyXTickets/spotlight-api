@@ -1,13 +1,15 @@
 import { ArtistLogic } from '../logics/artistLogic'
 import { CoreController } from '../coreController'
 import { Request, Response } from 'express'
+import 'reflect-metadata'
+import { Container } from 'typedi'
 
 export class ArtistController extends CoreController {
   private artistLogic: ArtistLogic
+
   constructor() {
     super()
-    this.artistLogic = new ArtistLogic()
-
+    this.artistLogic = Container.get(ArtistLogic)
     this.setRoutes([
       {
         uri: '/',
@@ -54,7 +56,23 @@ export class ArtistController extends CoreController {
    *           description: An artist.
    */
   public async getArtistById(req: Request, res: Response): Promise<void> {
-    const artist = await this.artistLogic.getArtistById(req.params.id)
-    res.status(200).send(artist)
+    try {
+      const artist = await this.artistLogic.getArtistById(req.params.id)
+      if (!artist) {
+        res.status(404).send({
+          status: 404,
+          message: 'Artist not found',
+        })
+        return
+      }
+      res.status(200).send(artist)
+    } catch (error) {
+      res.status(500).send({
+        status: 500,
+        message:
+          'Something went wrong while trying to get artist with id ' +
+          req.params.id,
+      })
+    }
   }
 }

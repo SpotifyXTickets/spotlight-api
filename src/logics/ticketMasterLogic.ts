@@ -6,7 +6,10 @@ import {
 } from '../types/ticketMasterTypes'
 import { ErrorType } from '../types/errorType'
 import isErrorResponse from '../helpers/isErrorResponse'
+import 'reflect-metadata'
+import { Service } from 'typedi'
 
+@Service()
 export default class TicketMasterLogic {
   public async getAllEvents(
     size?: number,

@@ -2,14 +2,17 @@ import { ObjectId } from 'bson'
 import Artist from '../models/artist'
 import { ArtistRepository } from '../repositories/artistRepository'
 import SpotifyLogic from './spotifyLogic'
+import 'reflect-metadata'
+import Container, { Service } from 'typedi'
 
+@Service()
 export class ArtistLogic {
   private artistRepository: ArtistRepository
   private spotifyLogic: SpotifyLogic
 
   constructor() {
-    this.artistRepository = new ArtistRepository()
-    this.spotifyLogic = new SpotifyLogic()
+    this.artistRepository = Container.get(ArtistRepository)
+    this.spotifyLogic = Container.get(SpotifyLogic)
   }
 
   public async getArtists(): Promise<Artist[]> {
