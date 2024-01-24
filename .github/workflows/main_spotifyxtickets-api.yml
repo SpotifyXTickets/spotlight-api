@@ -30,7 +30,7 @@ jobs:
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/spotlight-api:latest,${{ secrets.DOCKER_HUB_USERNAME }}/spotify-api:${{  github.ref_name }}
+        tags: ${{ secrets.DOCKER_HUB_USERNAME }}/spotlight-api:latest,${{ secrets.DOCKER_HUB_USERNAME }}/spotlight-api:${{  github.ref_name }}
         file: ./Dockerfile
 
   deploy:
