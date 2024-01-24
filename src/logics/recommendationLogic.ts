@@ -39,6 +39,8 @@ export default class RecommendationLogic {
       throw new Error('No playlists found')
     }
 
+    console.log('Recieved events: ', events)
+    console.log('Recieved playlists: ', playlists)
     this.events = events
     this.userPlaylists = playlists
 
