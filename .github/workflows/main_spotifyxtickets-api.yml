@@ -48,4 +48,4 @@ jobs:
         app-name: 'spotifyxtickets-api'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_2bf86f8ad91a4e01ad45902a1b924359 }}
-        images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_8c1eec8fbaf547ca9e2463f781116303 }}/3739323298328/spotlight-api:${{ github.ref_name }}'
+        images: 'index.docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/spotlight-api:${{ github.ref_name }}'
