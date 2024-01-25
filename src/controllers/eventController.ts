@@ -1,4 +1,3 @@
-import { EventRepository } from './../repositories/eventRepository'
 import { Request, Response } from 'express'
 import { CoreController } from '../coreController'
 import TicketMasterLogic from '../logics/ticketMasterLogic'
@@ -24,12 +23,12 @@ export default class EventController extends CoreController {
     this.eventLogic = new EventLogic()
     this.setRoutes([
       {
-        uri: '/events',
+        uri: '/',
         middlewares: [],
         method: this.getAllEvents.bind(this),
       },
       {
-        uri: '/events/:id',
+        uri: '/:id',
         middlewares: [],
         method: this.getEventById.bind(this),
       },

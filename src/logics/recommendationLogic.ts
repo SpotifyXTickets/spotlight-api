@@ -12,7 +12,7 @@ import {
 import SpotifyLogic from './spotifyLogic'
 import Event, { EmbeddedEvent } from '../models/event'
 import { transformSpotifyToTrack } from '../transformers/trackTransformers'
-import { Service } from 'typedi'
+import Container, { Service } from 'typedi'
 import 'reflect-metadata'
 
 @Service()
@@ -27,8 +27,8 @@ export default class RecommendationLogic {
   private tracksWithAudioFeatures: Track[] = []
 
   public async fetchData(apiKey: string, playlistIds: string[]) {
-    const spotifyLogic = new SpotifyLogic()
-    const eventRepository = new EventRepository()
+    const spotifyLogic = Container.get(SpotifyLogic)
+    const eventRepository = Container.get(EventRepository)
 
     const [events, playlists] = await Promise.all([
       eventRepository.getEvents(),
